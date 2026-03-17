@@ -1,0 +1,33 @@
+# environment
+venv/
+myvenv/
+.env
+*.pyc
+__pycache__/
+
+# database
+shopnow.db
+*.db
+
+# models
+models/
+
+# faiss index
+rag_store/index/
+
+# temp audio
+temp_audio/
+
+# python
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# os
+.DS_Store
+Thumbs.db
+
+# ide
+.vscode/
+.idea/

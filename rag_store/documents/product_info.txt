@@ -1,0 +1,42 @@
+ShopNow Product Catalogue Information
+
+Product categories:
+- Fashion — kurtas, sarees, western wear, ethnic wear, accessories
+- Footwear — casual, formal, sports, ethnic
+- Electronics — earbuds, smartwatches, phone accessories, cables
+- Beauty — skincare, haircare, wellness products
+- Sports and fitness — yoga mats, resistance bands, water bottles
+- Home and lifestyle — bags, organizers, stationery
+
+Sizing:
+- All clothing follows standard Indian sizing (XS to 3XL).
+- Size chart available on each product page.
+- Footwear follows Indian sizing (IND 6 to IND 12).
+- If unsure, size up for comfort fit.
+
+Product authenticity:
+- All products on ShopNow are 100% authentic.
+- Sourced directly from brands or authorized distributors.
+- Report suspected counterfeit immediately to support.
+
+Product availability:
+- Out of stock items show expected restock date when available.
+- Notify me feature available for out of stock products.
+- Limited edition items marked clearly and not restocked.
+
+Warranty:
+- Electronics carry manufacturer warranty.
+- Warranty card included in packaging for applicable products.
+- ShopNow does not provide additional warranty beyond manufacturer terms.
+- Warranty claims handled directly with manufacturer or via ShopNow support.
+
+Product reviews:
+- Only verified buyers can leave reviews.
+- Reviews moderated for spam and fake content.
+- Average rating shown on product page.
+
+Customization:
+- Personalized products available in select categories.
+- Customization details collected at time of order.
+- Customized products non-returnable and non-exchangeable.
+- Additional 2-3 days added to delivery time for custom orders.

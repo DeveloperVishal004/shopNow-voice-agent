@@ -1,0 +1,38 @@
+ShopNow Payment FAQ
+
+Accepted payment methods:
+- UPI (GPay, PhonePe, Paytm, BHIM)
+- Credit and debit cards (Visa, Mastercard, RuPay)
+- Net banking
+- ShopNow wallet
+- Cash on delivery (orders up to Rs 5000)
+- EMI available on orders above Rs 2000 via select banks
+
+Payment failure:
+- If payment fails but amount is deducted, it will be refunded within 5-7 business days.
+- Check with your bank if refund is not received after 7 days.
+- Retry payment using a different method if issue persists.
+- Contact support with your order ID and transaction ID for faster resolution.
+
+Double charge:
+- Rare but can happen due to network issues.
+- Contact support immediately with both transaction IDs.
+- Second charge reversed within 3-5 business days.
+- ShopNow does not retain double charged amounts.
+
+EMI:
+- Available on credit cards from HDFC, ICICI, SBI, Axis, Kotak.
+- Tenure options of 3, 6, 9, and 12 months.
+- No cost EMI available on select products.
+- Processing fee may apply depending on bank.
+
+ShopNow wallet:
+- Loaded via UPI, card, or net banking.
+- Used for instant checkout.
+- Refunds credited to wallet within 24 hours.
+- Wallet balance cannot be transferred to bank account.
+
+GST and invoices:
+- GST included in displayed price.
+- Invoice available in app under order details.
+- Business invoice with GSTIN available on request.

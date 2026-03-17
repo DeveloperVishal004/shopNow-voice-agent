@@ -1,0 +1,53 @@
+# ─── Web Framework ───────────────────────────────────────
+fastapi==0.115.0
+uvicorn[standard]==0.30.0        # ASGI server to run FastAPI
+python-multipart==0.0.9          # needed for audio file uploads in FastAPI
+websockets==14.1                 # WebSocket support for realtime API
+
+# ─── OpenAI ──────────────────────────────────────────────
+openai==1.40.0                   # STT (Whisper), TTS, GPT-4o, Realtime API
+
+# ─── LangChain ───────────────────────────────────────────
+langchain==0.2.14
+langchain-openai==0.1.22         # LangChain's OpenAI integration
+langchain-community==0.2.12      # FAISS loader, document loaders
+langchain-text-splitters==0.2.1  # Text splitting utilities for RAG
+
+# ─── RAG / Vector Store ──────────────────────────────────
+faiss-cpu==1.8.0                 # Vector similarity search (local, no server needed)
+tiktoken==0.7.0                  # Token counter for chunking documents
+numpy==1.26.4                    # Required by FAISS and transformers
+
+# ─── Database ────────────────────────────────────────────
+sqlalchemy==2.0.32               # ORM for SQLite
+aiosqlite==0.20.0                # Async SQLite driver for FastAPI
+
+# ─── Sentiment Analysis ──────────────────────────────────
+transformers==4.44.0             # HuggingFace models
+torch==2.1.2                     # PyTorch (required by transformers)
+scipy==1.14.0                    # Required by sentiment model
+
+# ─── Frontend ────────────────────────────────────────────
+streamlit==1.37.0
+plotly==5.23.0                   # Charts for Streamlit dashboard
+pandas==2.2.2                    # Data manipulation for reports
+
+# ─── Audio Handling ──────────────────────────────────────
+pydub==0.25.1                    # Audio format conversion (mp3, wav, ogg)
+soundfile==0.12.1                # Read/write audio files
+
+# ─── Language Detection ──────────────────────────────────
+langdetect==1.0.9                # Detect Hindi vs English vs regional
+
+# ─── Utilities ───────────────────────────────────────────
+python-dotenv==1.0.1             # Load .env file
+pydantic==2.8.2                  # Data validation (built into FastAPI)
+pydantic-settings==2.2.1         # Configuration management from .env
+httpx==0.27.0                    # Async HTTP client
+requests==2.32.3                 # HTTP client library
+python-jose==3.3.0               # JWT tokens if you add auth later
+tenacity==8.5.0                  # Retry logic for API calls
+loguru==0.7.2                    # Better logging than Python's default
+
+# ─── Report Generation ───────────────────────────────────
+fpdf2==2.7.9                     # Generate daily ops report as PDF
