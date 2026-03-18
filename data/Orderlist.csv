@@ -1,0 +1,101 @@
+Order id,Product,Purchaser,Price,Units Purchased,Total cost,Seller,Buy Date,Payment status,Payment Mode,Delivery status,Refund status
+ORD-1001,Wireless Mouse,John Doe,25.00,2,50.00,TechStore Direct,2026-03-10,Paid,Credit Card,Delivered,N/A
+ORD-1002,Bluetooth Earbuds,Jane Smith,45.00,1,52.00,AudioX,2026-03-11,Paid,UPI,Cancelled,Refunded
+ORD-1003,Laptop Stand,Alice Johnson,30.00,1,35.00,ErgonomicsPlus,2026-03-16,Pending,Net Banking,Processing,N/A
+ORD-1004,Sci-Fi Novel Paperback,Bob Brown,15.00,3,50.00,BooksWorld,2026-03-12,Paid,COD,Delivered,N/A
+ORD-1005,Smartwatch Pro,Charlie Davis,150.00,1,150.00,GadgetHub,2026-03-17,Failed,Debit Card,Cancelled,N/A
+ORD-1006,Running Shoes,Diana Prince,80.00,1,85.00,FitGear Official,2026-03-05,Paid,Credit Card,Delivered,Processing
+ORD-1007,4K Monitor,Evan Wright,320.00,2,640.00,VisionTech,2026-03-15,Paid,Gift Card,Shipped,N/A
+ORD-1008,Coffee Maker,Fiona Green,45.00,1,52.50,HomeEssentials,2026-03-16,Pending,COD,Shipped,N/A
+ORD-1009,LED Desk Lamp,George Hill,20.00,1,25.00,BrightIdeas,2026-02-28,Paid,Debit Card,Delivered,Refunded
+ORD-1010,Yoga Mat,Hannah Lee,22.00,1,22.00,ActiveLife,2026-03-17,Paid,UPI,Out for Delivery,N/A
+ORD-1011,Gaming Keyboard,Isaac Clarke,85.00,1,90.00,TechStore Direct,2026-03-10,Paid,Credit Card,Delivered,N/A
+ORD-1012,Protein Powder 2kg,Julia Chang,55.00,2,110.00,FitGear Official,2026-03-14,Paid,Debit Card,Delivered,N/A
+ORD-1013,Smartphone Case,Kevin Space,12.00,3,36.00,GadgetHub,2026-03-17,Pending,UPI,Processing,N/A
+ORD-1014,Noise Cancelling Headphones,Laura Croft,250.00,1,250.00,AudioX,2026-03-01,Paid,Credit Card,Delivered,Processing
+ORD-1015,Electric Toothbrush,Mike Ross,40.00,1,45.00,HomeEssentials,2026-03-18,Pending,COD,Processing,N/A
+ORD-1016,Mechanical Pencils (Pack of 12),Nina Williams,8.00,5,45.00,BooksWorld,2026-03-15,Paid,Net Banking,Shipped,N/A
+ORD-1017,Office Chair,Oscar Isaac,150.00,1,170.00,ErgonomicsPlus,2026-03-16,Paid,Credit Card,Out for Delivery,N/A
+ORD-1018,Webcam 1080p,Paula Bean,60.00,2,120.00,VisionTech,2026-03-13,Failed,Debit Card,Cancelled,N/A
+ORD-1019,Dumbbell Set,Quinn Fabray,45.00,1,65.00,ActiveLife,2026-03-11,Paid,UPI,Delivered,Refunded
+ORD-1020,Fleece Jacket,Rachel Green,35.00,2,70.00,ApparelCo,2026-03-09,Paid,Gift Card,Delivered,N/A
+ORD-1021,Digital Thermometer,Sam Fisher,15.00,1,18.00,HealthPlus,2026-03-17,Paid,Net Banking,Shipped,N/A
+ORD-1022,Table Lamp,Tina Fey,28.00,1,33.00,BrightIdeas,2026-03-08,Paid,Credit Card,Delivered,N/A
+ORD-1023,External Hard Drive 2TB,Uma Thurman,75.00,1,75.00,TechStore Direct,2026-03-18,Pending,UPI,Processing,N/A
+ORD-1024,Cookware Set,Victor Stone,120.00,1,120.00,HomeEssentials,2026-03-05,Paid,Credit Card,Delivered,N/A
+ORD-1025,Fantasy Board Game,Wendy Wu,45.00,1,50.00,FunTimes,2026-03-16,Paid,COD,Shipped,N/A
+ORD-1026,Men\'s Wallet,Xavier Wood,25.00,1,25.00,ApparelCo,2026-03-14,Paid,Debit Card,Delivered,N/A
+ORD-1027,Wireless Router,Yvonne Strahovski,85.00,1,90.00,TechStore Direct,2026-03-02,Paid,Credit Card,Delivered,Refunded
+ORD-1028,Water Bottle 1L,Zack Taylor,15.00,4,60.00,ActiveLife,2026-03-17,Paid,UPI,Out for Delivery,N/A
+ORD-1029,HDMI Cable 6ft,Alice Johnson,8.00,2,20.00,VisionTech,2026-03-18,Pending,Net Banking,Processing,N/A
+ORD-1030,Action Camera,Bob Brown,200.00,1,200.00,GadgetHub,2026-03-10,Failed,Credit Card,Cancelled,N/A
+ORD-1031,Resistance Bands,Charlie Davis,18.00,1,22.00,FitGear Official,2026-03-13,Paid,UPI,Delivered,N/A
+ORD-1032,Desk Organizer,Diana Prince,12.00,2,29.00,ErgonomicsPlus,2026-03-15,Paid,COD,Shipped,N/A
+ORD-1033,Set of Mixing Bowls,Evan Wright,30.00,1,35.00,HomeEssentials,2026-03-07,Paid,Gift Card,Delivered,N/A
+ORD-1034,Mystery Novel,Fiona Green,14.00,1,19.00,BooksWorld,2026-03-18,Pending,Debit Card,Processing,N/A
+ORD-1035,USB-C Charger,George Hill,20.00,3,60.00,TechStore Direct,2026-03-12,Paid,Credit Card,Delivered,Processing
+ORD-1036,Air Purifier,Hannah Lee,150.00,1,165.00,HomeEssentials,2026-03-04,Paid,Net Banking,Delivered,N/A
+ORD-1037,Microphone Stand,Isaac Clarke,25.00,1,30.00,AudioX,2026-03-17,Paid,UPI,Out for Delivery,N/A
+ORD-1038,Winter Gloves,Julia Chang,18.00,2,36.00,ApparelCo,2026-03-16,Paid,Credit Card,Shipped,N/A
+ORD-1039,Vitamin C Supplement,Kevin Space,15.00,3,45.00,HealthPlus,2026-03-11,Paid,Debit Card,Delivered,N/A
+ORD-1040,Portable Projector,Laura Croft,250.00,1,250.00,VisionTech,2026-03-09,Paid,Credit Card,Cancelled,Refunded
+ORD-1041,Electric Kettle,Mike Ross,35.00,1,40.00,HomeEssentials,2026-03-18,Pending,COD,Processing,N/A
+ORD-1042,Graph Paper Notebook,Nina Williams,5.00,10,55.00,BooksWorld,2026-03-15,Paid,UPI,Shipped,N/A
+ORD-1043,Standing Desk Converter,Oscar Isaac,120.00,1,135.00,ErgonomicsPlus,2026-03-14,Paid,Net Banking,Delivered,N/A
+ORD-1044,Ring Light,Paula Bean,45.00,1,50.00,VisionTech,2026-03-17,Paid,Credit Card,Out for Delivery,N/A
+ORD-1045,Jump Rope,Quinn Fabray,10.00,2,25.00,ActiveLife,2026-03-06,Failed,UPI,Cancelled,N/A
+ORD-1046,Denim Jeans,Rachel Green,45.00,1,50.00,ApparelCo,2026-03-12,Paid,Debit Card,Delivered,N/A
+ORD-1047,First Aid Kit,Sam Fisher,22.00,1,27.00,HealthPlus,2026-03-15,Paid,COD,Shipped,N/A
+ORD-1048,Ceiling Fan,Tina Fey,85.00,2,170.00,HomeEssentials,2026-03-10,Paid,Credit Card,Delivered,Refunded
+ORD-1049,SSD 1TB,Uma Thurman,90.00,1,90.00,TechStore Direct,2026-03-18,Pending,Net Banking,Processing,N/A
+ORD-1050,Knife Set,Victor Stone,55.00,1,60.00,HomeEssentials,2026-03-16,Paid,Gift Card,Shipped,N/A
+ORD-1051,Puzzle 1000 Pieces,Wendy Wu,20.00,2,40.00,FunTimes,2026-03-13,Paid,UPI,Delivered,N/A
+ORD-1052,Leather Belt,Xavier Wood,30.00,1,35.00,ApparelCo,2026-03-17,Paid,Credit Card,Out for Delivery,N/A
+ORD-1053,Smart Home Hub,Yvonne Strahovski,100.00,1,100.00,GadgetHub,2026-03-08,Paid,Debit Card,Delivered,Processing
+ORD-1054,Tennis Racket,Zack Taylor,65.00,1,70.00,ActiveLife,2026-03-15,Paid,Net Banking,Shipped,N/A
+ORD-1055,Tablet Case,Alice Johnson,15.00,1,20.00,GadgetHub,2026-03-18,Pending,COD,Processing,N/A
+ORD-1056,Drone with Camera,Bob Brown,350.00,1,350.00,VisionTech,2026-03-11,Paid,Credit Card,Delivered,N/A
+ORD-1057,Gym Bag,Charlie Davis,35.00,1,40.00,FitGear Official,2026-03-14,Paid,UPI,Delivered,N/A
+ORD-1058,Mouse Pad Large,Diana Prince,18.00,1,23.00,ErgonomicsPlus,2026-03-17,Paid,Net Banking,Out for Delivery,N/A
+ORD-1059,Baking Sheet Set,Evan Wright,25.00,1,30.00,HomeEssentials,2026-03-16,Paid,Credit Card,Shipped,N/A
+ORD-1060,History Biography,Fiona Green,22.00,1,27.00,BooksWorld,2026-03-12,Paid,Gift Card,Delivered,N/A
+ORD-1061,Power Bank 20000mAh,George Hill,40.00,2,80.00,TechStore Direct,2026-03-09,Paid,UPI,Delivered,Refunded
+ORD-1062,Humidifier,Hannah Lee,45.00,1,50.00,HomeEssentials,2026-03-15,Failed,Credit Card,Cancelled,N/A
+ORD-1063,Studio Monitor Speakers,Isaac Clarke,300.00,1,315.00,AudioX,2026-03-18,Pending,Net Banking,Processing,N/A
+ORD-1064,Sunglasses,Julia Chang,55.00,1,60.00,ApparelCo,2026-03-13,Paid,Debit Card,Delivered,N/A
+ORD-1065,Whey Protein Chocolate,Kevin Space,60.00,1,65.00,HealthPlus,2026-03-17,Paid,COD,Shipped,N/A
+ORD-1066,Tripod Stand,Laura Croft,35.00,1,40.00,VisionTech,2026-03-16,Paid,UPI,Shipped,N/A
+ORD-1067,Toaster 4-Slice,Mike Ross,45.00,1,50.00,HomeEssentials,2026-03-05,Paid,Credit Card,Delivered,N/A
+ORD-1068,Color Markers Set,Nina Williams,15.00,3,50.00,BooksWorld,2026-03-14,Paid,Net Banking,Delivered,Processing
+ORD-1069,Foot Rest,Oscar Isaac,25.00,1,30.00,ErgonomicsPlus,2026-03-17,Paid,Credit Card,Out for Delivery,N/A
+ORD-1070,Green Screen Backdrop,Paula Bean,40.00,1,45.00,VisionTech,2026-03-11,Paid,Gift Card,Delivered,N/A
+ORD-1071,Kettlebell 15kg,Quinn Fabray,50.00,1,65.00,ActiveLife,2026-03-18,Pending,UPI,Processing,N/A
+ORD-1072,Sneakers,Rachel Green,90.00,1,90.00,ApparelCo,2026-03-15,Paid,Debit Card,Shipped,N/A
+ORD-1073,Blood Pressure Monitor,Sam Fisher,45.00,1,50.00,HealthPlus,2026-03-10,Paid,Credit Card,Delivered,N/A
+ORD-1074,Smart Light Bulbs (4 Pack),Tina Fey,50.00,2,100.00,BrightIdeas,2026-03-07,Paid,UPI,Delivered,Refunded
+ORD-1075,Flash Drive 256GB,Uma Thurman,30.00,2,60.00,TechStore Direct,2026-03-16,Paid,Net Banking,Shipped,N/A
+ORD-1076,Blender,Victor Stone,75.00,1,80.00,HomeEssentials,2026-03-17,Paid,COD,Out for Delivery,N/A
+ORD-1077,Card Game Expandable,Wendy Wu,25.00,1,30.00,FunTimes,2026-03-12,Paid,Credit Card,Delivered,N/A
+ORD-1078,Cotton Socks (10 Pack),Xavier Wood,18.00,2,36.00,ApparelCo,2026-03-14,Paid,Gift Card,Delivered,N/A
+ORD-1079,Security Camera Indoor,Yvonne Strahovski,45.00,3,135.00,GadgetHub,2026-03-15,Failed,Debit Card,Cancelled,N/A
+ORD-1080,Golf Balls (Dozen),Zack Taylor,25.00,2,55.00,ActiveLife,2026-03-18,Pending,UPI,Processing,N/A
+ORD-1081,Screen Protector,Alice Johnson,10.00,2,25.00,GadgetHub,2026-03-16,Paid,Credit Card,Shipped,N/A
+ORD-1082,VR Headset,Bob Brown,299.00,1,299.00,VisionTech,2026-03-08,Paid,Net Banking,Delivered,N/A
+ORD-1083,Cycling Helmet,Charlie Davis,55.00,1,60.00,FitGear Official,2026-03-13,Paid,UPI,Delivered,Processing
+ORD-1084,Keyboard Wrist Rest,Diana Prince,15.00,1,20.00,ErgonomicsPlus,2026-03-17,Paid,Debit Card,Out for Delivery,N/A
+ORD-1085,Spice Rack,Evan Wright,35.00,1,40.00,HomeEssentials,2026-03-11,Paid,COD,Delivered,N/A
+ORD-1086,Cookbook,Fiona Green,25.00,1,30.00,BooksWorld,2026-03-15,Paid,Credit Card,Shipped,N/A
+ORD-1087,Bluetooth Speaker Waterproof,George Hill,45.00,1,50.00,AudioX,2026-03-18,Pending,Gift Card,Processing,N/A
+ORD-1088,Vacuum Cleaner,Hannah Lee,180.00,1,190.00,HomeEssentials,2026-03-06,Paid,Net Banking,Delivered,Refunded
+ORD-1089,Audio Interface,Isaac Clarke,120.00,1,125.00,AudioX,2026-03-14,Paid,Credit Card,Delivered,N/A
+ORD-1090,Rain Jacket,Julia Chang,60.00,1,65.00,ApparelCo,2026-03-17,Paid,UPI,Out for Delivery,N/A
+ORD-1091,Multivitamin Gummies,Kevin Space,18.00,2,40.00,HealthPlus,2026-03-16,Paid,Debit Card,Shipped,N/A
+ORD-1092,Telescope,Laura Croft,150.00,1,165.00,VisionTech,2026-03-12,Failed,Net Banking,Cancelled,N/A
+ORD-1093,Slow Cooker,Mike Ross,45.00,1,50.00,HomeEssentials,2026-03-18,Pending,COD,Processing,N/A
+ORD-1094,Calligraphy Pen Set,Nina Williams,25.00,1,30.00,BooksWorld,2026-03-15,Paid,Credit Card,Shipped,N/A
+ORD-1095,Lumbar Support Cushion,Oscar Isaac,35.00,1,40.00,ErgonomicsPlus,2026-03-10,Paid,UPI,Delivered,N/A
+ORD-1096,Capture Card,Paula Bean,130.00,1,130.00,VisionTech,2026-03-13,Paid,Net Banking,Delivered,Processing
+ORD-1097,Foam Roller,Quinn Fabray,20.00,1,25.00,ActiveLife,2026-03-17,Paid,Debit Card,Out for Delivery,N/A
+ORD-1098,Beanie Hat,Rachel Green,15.00,2,35.00,ApparelCo,2026-03-16,Paid,Gift Card,Shipped,N/A
+ORD-1099,Pulse Oximeter,Sam Fisher,25.00,1,30.00,HealthPlus,2026-03-14,Paid,Credit Card,Delivered,N/A
+ORD-1100,Desk Fan,Tina Fey,20.00,1,25.00,BrightIdeas,2026-03-18,Pending,UPI,Processing,N/A
