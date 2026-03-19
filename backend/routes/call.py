@@ -132,10 +132,14 @@ async def end_call(request: EndCallRequest):
     """
     import json
     from backend.services.sentiment import get_average_sentiment
+    from backend.utils.call_logger import save_call_to_folder
 
     session = end_session(request.call_id, request.outcome)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
+
+    # generate summary and save to local folder
+    await save_call_to_folder(request.call_id, session)
 
     # calculate average sentiment
     avg_sentiment = get_average_sentiment(

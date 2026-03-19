@@ -16,6 +16,7 @@ from backend.services.sentiment import score_sentiment
 from backend.services.escalation import check_escalation
 from backend.services.intent import classify_intent
 from backend.services.llm import generate_response
+from backend.utils.call_logger import save_call_to_folder
 
 router = APIRouter()
 aclient = AsyncOpenAI(api_key=settings.openai_api_key)
@@ -55,7 +56,9 @@ async def realtime_call(websocket: WebSocket, call_id: str):
                         asyncio.create_task(process_turn(websocket, call_id, turn_bytes))
                         
                 elif msg_type == "end_call":
-                    end_session(call_id, "resolved")
+                    session_data = end_session(call_id, "resolved")
+                    if session_data:
+                        asyncio.create_task(save_call_to_folder(call_id, session_data))
                     await websocket.send_text(json.dumps({
                         "type": "call_ended",
                         "call_id": call_id
@@ -65,7 +68,9 @@ async def realtime_call(websocket: WebSocket, call_id: str):
 
     except WebSocketDisconnect:
         logger.info(f"Browser disconnected | call: {call_id}")
-        end_session(call_id, "resolved")
+        session_data = end_session(call_id, "resolved")
+        if session_data:
+            asyncio.create_task(save_call_to_folder(call_id, session_data))
 
     except Exception as e:
         logger.error(f"WebSocket error | call: {call_id} | {e}")
@@ -190,7 +195,9 @@ async def process_turn(websocket: WebSocket, call_id: str, pcm_bytes: bytes):
                 "message": escalation["message"],
                 "escalation_brief": escalation["brief"]
             }))
-            end_session(call_id, "escalated")
+            session_data = end_session(call_id, "escalated")
+            if session_data:
+                asyncio.create_task(save_call_to_folder(call_id, session_data))
             return
 
         # Use the generate_response from llm.py
