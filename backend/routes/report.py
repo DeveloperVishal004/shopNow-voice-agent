@@ -150,6 +150,23 @@ async def get_daily_report():
                 (resolved_calls / total_calls * 100) if total_calls > 0 else 0, 1
             )
 
+            # recent calls
+            recent_rows = await db.execute(
+                select(CallLog.id, CallLog.intent, CallLog.language, CallLog.outcome, CallLog.sentiment_avg, CallLog.created_at)
+                .order_by(CallLog.created_at.desc())
+                .limit(15)
+            )
+            recent_calls = []
+            for r in recent_rows.fetchall():
+                recent_calls.append({
+                    "id": r.id,
+                    "intent": r.intent,
+                    "language": r.language,
+                    "outcome": r.outcome,
+                    "sentiment_avg": r.sentiment_avg,
+                    "created_at": r.created_at.isoformat() if r.created_at else None
+                })
+
             return {
                 "total_calls":      total_calls,
                 "resolved_calls":   resolved_calls,
@@ -158,6 +175,7 @@ async def get_daily_report():
                 "avg_sentiment":    avg_sentiment,
                 "calls_by_intent":  calls_by_intent,
                 "calls_by_language": calls_by_language,
+                "recent_calls":     recent_calls,
             }
 
     except Exception as e:

@@ -8,6 +8,11 @@ from datetime import datetime
 from backend.services.llm import client
 from backend.config import settings
 
+# For DB logging
+from backend.db.database import AsyncSessionLocal
+from backend.db.models import CallLog
+from backend.services.sentiment import get_average_sentiment
+
 CALL_LOGS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "call_logs"))
 os.makedirs(CALL_LOGS_DIR, exist_ok=True)
 
@@ -78,6 +83,31 @@ async def save_call_to_folder(call_id: str, session: dict):
         with open(filepath, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
             
-        logger.info(f"Call logs saved successfully for call: {call_id}")
+        # ---------------------------------------------------------
+        # ALSO LOG TO THE SQLITE DATABASE FOR THE DASHBOARD
+        # ---------------------------------------------------------
+        avg_sent = get_average_sentiment(session.get("sentiment_history", []))
+        
+        # Determine outcome based on the boolean flags set by end_session
+        outcome = "escalated" if session.get("escalated") else "resolved"
+
+        async with AsyncSessionLocal() as db:
+            # Check if this call_id is already logged (avoid dupes if both API and WS trigger it)
+            from sqlalchemy import select
+            existing = await db.execute(select(CallLog).where(CallLog.id == call_id))
+            if not existing.scalar_one_or_none():
+                call_log = CallLog(
+                    id            = call_id,
+                    customer_id   = session.get("customer_id") or "Unknown",
+                    language      = session.get("language", "en"),
+                    intent        = session.get("current_intent", "unknown"),
+                    outcome       = outcome,
+                    duration_secs = 0, # we don't have accurate duration here unless we compute it
+                    sentiment_avg = avg_sent,
+                    transcript    = json.dumps(turns)
+                )
+                db.add(call_log)
+                await db.commit()
+                logger.info(f"Call {call_id} successfully persisted to SQLite DB.")
     except Exception as e:
         logger.error(f"Failed to save call log for {call_id}: {e}")

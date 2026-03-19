@@ -138,33 +138,11 @@ async def end_call(request: EndCallRequest):
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    # generate summary and save to local folder
+    # generate summary and save to local folder (which also logs to sqlite now)
     await save_call_to_folder(request.call_id, session)
 
-    # calculate average sentiment
-    avg_sentiment = get_average_sentiment(
-        session.get("sentiment_history", [])
-    )
-
-    # build transcript string
-    transcript = json.dumps(session.get("turns", []))
-
-    # log to DB via report endpoint internally
-    async with __import__('backend.db.database', fromlist=['AsyncSessionLocal']).AsyncSessionLocal() as db:
-        from backend.db.models import CallLog
-        call_log = CallLog(
-            id            = request.call_id,
-            customer_id   = session.get("customer_id"),
-            language      = session.get("language", "en"),
-            intent        = session.get("current_intent", "unknown"),
-            outcome       = request.outcome,
-            duration_secs = 0,
-            sentiment_avg = avg_sentiment,
-            transcript    = transcript
-        )
-        db.add(call_log)
-        await db.commit()
-        logger.info(f"Call logged to DB: {request.call_id}")
+    # get average sentiment for response
+    avg_sentiment = get_average_sentiment(session.get("sentiment_history", []))
 
     delete_session(request.call_id)
 
