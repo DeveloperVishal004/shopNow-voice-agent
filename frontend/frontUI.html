@@ -674,6 +674,7 @@ body {
 
 <div id="app">
 
+  <!-- ══ HEADER ══ -->
   <header class="header">
     <div class="header-logo">
       <div class="header-logo-mark">🛍</div>
@@ -690,15 +691,18 @@ body {
     </div>
   </header>
 
+  <!-- ══ SIDEBAR LEFT ══ -->
   <aside class="sidebar">
+    <!-- Agent card -->
     <div class="agent-card">
-      <div class="agent-avatar">🎧</div>
+      <div class="agent-avatar"> </div>
       <div class="agent-info">
         <div class="agent-name">Priya</div>
         <div class="agent-title">ShopNow AI Support</div>
       </div>
     </div>
 
+    <!-- Session stats -->
     <div>
       <div class="sidebar-section-label">Session</div>
       <div class="stats-row">
@@ -721,6 +725,7 @@ body {
       </div>
     </div>
 
+    <!-- History -->
     <div>
       <div class="sidebar-section-label">Recent Calls</div>
       <div id="historyList">
@@ -729,17 +734,19 @@ body {
     </div>
   </aside>
 
+  <!-- ══ MAIN CENTER ══ -->
   <main class="main" id="mainView">
 
+    <!-- ── VIEW: CALL ── -->
     <div id="viewCall">
 
+      <!-- PRE-CALL -->
       <div id="preCall" class="pre-call">
         <div class="orb-container">
           <div class="orb-ring orb-ring-1"></div>
           <div class="orb-ring orb-ring-2"></div>
           <div class="orb-ring orb-ring-3"></div>
           <div class="orb idle" id="orb">
-            <span class="orb-icon">🎧</span>
           </div>
         </div>
 
@@ -758,19 +765,22 @@ body {
         </button>
       </div>
 
+      <!-- ACTIVE CALL -->
       <div id="activeCall" class="hidden fade-in" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:20px;">
 
+        <!-- call info bar -->
         <div class="call-info-bar" id="callInfoBar">
           <div style="display:flex;align-items:center;gap:8px;">
             <div class="header-dot"></div>
             <span id="callInfoLabel" style="font-size:13px;font-weight:500;color:var(--green)">Connected to Priya</span>
           </div>
           <div style="display:flex;align-items:center;gap:12px;">
-            <span class="call-timer" id="callTimer">0:00</span>
+            <span class="call-timer" id="callTimer"> 0:00</span>
             <button class="hang-btn" onclick="hangUp()">⬛ Hang Up</button>
           </div>
         </div>
 
+        <!-- escalation brief (hidden until escalated) -->
         <div class="escalation-card hidden" id="escalationCard">
           <div class="escalation-title">⚠ Transferred to Human Agent</div>
           <div class="esc-grid">
@@ -780,35 +790,43 @@ body {
           </div>
         </div>
 
+        <!-- orb -->
         <div class="orb-container" style="width:180px;height:180px;">
           <div class="orb idle" id="orbActive" style="width:110px;height:110px;">
-            <span class="orb-icon">🎧</span>
           </div>
           <div class="orb-wave"></div>
           <div class="orb-wave"></div>
           <div class="orb-wave"></div>
         </div>
 
+        <!-- status + waveform -->
         <div class="status-tag" id="statusTag">
           <div class="status-dot"></div>
           <span id="statusText">Connecting…</span>
         </div>
 
         <div class="waveform" id="waveform">
-          </div>
+          <!-- bars injected by JS -->
+        </div>
 
+        <!-- mic controls -->
         <div class="mic-area">
           <button class="mic-side-btn" id="muteBtn" onclick="toggleMic()" title="Mute/Unmute">🎙</button>
           <button class="mic-btn idle" id="micBtn" onclick="toggleMic()" disabled>🎤</button>
           <button class="mic-side-btn" onclick="refreshTranscript()" title="Refresh transcript">↻</button>
         </div>
 
+        <!-- mini log -->
         <div class="log-box" id="logBox" style="width:100%;max-width:480px;"></div>
 
+        <!-- hidden iframe-style voice interface -->
         <div id="voiceCore" style="display:none;"></div>
       </div>
 
-    </div><div id="viewDashboard" class="hidden fade-in" style="width:100%;height:100%;overflow-y:auto;padding:8px;">
+    </div><!-- /viewCall -->
+
+    <!-- ── VIEW: DASHBOARD ── -->
+    <div id="viewDashboard" class="hidden fade-in" style="width:100%;height:100%;overflow-y:auto;padding:8px;">
       <div style="margin-bottom:20px;">
         <h2 style="font-family:var(--font-display);font-size:22px;font-weight:700;margin-bottom:4px;">Live Operations</h2>
         <p style="font-size:13px;color:var(--text-muted);">Real-time analytics for ShopNow support</p>
@@ -834,17 +852,20 @@ body {
         </div>
       </div>
 
+      <!-- intent bars -->
       <div style="padding:16px;border-radius:16px;border:1px solid var(--glass-border);background:var(--glass);margin-bottom:12px;">
         <div class="panel-title" style="margin-bottom:14px;">Calls by Intent</div>
         <div id="intentBars"></div>
       </div>
 
+      <!-- language breakdown -->
       <div style="padding:16px;border-radius:16px;border:1px solid var(--glass-border);background:var(--glass);">
         <div class="panel-title" style="margin-bottom:14px;">Calls by Language</div>
         <div id="langBars"></div>
       </div>
     </div>
 
+    <!-- ── VIEW: ESCALATIONS ── -->
     <div id="viewEscalations" class="hidden fade-in" style="width:100%;height:100%;overflow-y:auto;padding:8px;">
       <div style="margin-bottom:20px;">
         <h2 style="font-family:var(--font-display);font-size:22px;font-weight:700;margin-bottom:4px;">Escalation Log</h2>
@@ -864,6 +885,7 @@ body {
 
   </main>
 
+  <!-- ══ RIGHT PANEL — TRANSCRIPT ══ -->
   <aside class="panel-right">
     <div class="panel-title">Transcript</div>
     <div class="transcript-scroll" id="transcriptScroll">
@@ -873,10 +895,13 @@ body {
       </div>
     </div>
 
+    <!-- quick refresh -->
     <button class="nav-btn" style="width:100%;text-align:center;padding:8px;" onclick="refreshTranscript()">↻ Refresh</button>
   </aside>
 
-</div><script>
+</div><!-- /app -->
+
+<script>
 /* ═══════════════════════════════════════════════
    CONFIG
 ═══════════════════════════════════════════════ */
@@ -1466,20 +1491,6 @@ async function fetchEscalation() {
     const r = await fetch(`${API_BASE}/report/escalation/${id}`);
     if (!r.ok) { result.innerHTML = '<div style="color:var(--red);font-size:13px">No escalation found for this call ID</div>'; return; }
     const b = await r.json();
-
-    // FIX: The escalation endpoint does not supply 'turns' and can occasionally omit session context for completed calls. 
-    // We seamlessly bridge this link by fetching the session log and safely merging the required data attributes.
-    try {
-        const sessionReq = await fetch(`${API_BASE}/call/session/${id}`);
-        if (sessionReq.ok) {
-            const sessionData = await sessionReq.json();
-            b.turns          = sessionData.turns || [];
-            b.order_context  = sessionData.order_context || b.order_context;
-            b.current_intent = sessionData.current_intent || b.current_intent;
-            b.customer_phone = sessionData.customer_phone || b.customer_phone;
-            b.language       = sessionData.language || b.language;
-        }
-    } catch(err) { /* Suppress, graceful fallback active */ }
 
     const sentMap = { positive:1, neutral:0, negative:-0.5, angry:-1 };
     const sentIcons = { positive:'🟢', neutral:'🔵', negative:'🟠', angry:'🔴' };
