@@ -25,7 +25,7 @@ class Settings(BaseSettings):
 
     # Escalation thresholds
     escalation_negative_turns: int = 4
-    escalation_sentiment_threshold: float = -0.7
+    escalation_sentiment_threshold: float = -0.2
     escalation_min_turns: int = 3
 
 

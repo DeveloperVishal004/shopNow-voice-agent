@@ -44,14 +44,13 @@ def check_escalation(session: dict) -> dict:
     # ── Rule 2: consecutive negative/angry turns ─────────
     if len(sentiment_history) >= settings.escalation_negative_turns:
         recent = sentiment_history[-settings.escalation_negative_turns:]
-        all_negative = all(
-            s in ["negative", "angry"] for s in recent
-        )
-        if all_negative:
-            logger.info(f"Escalation triggered: {settings.escalation_negative_turns} consecutive negative turns")
+        negative_count = sum(1 for s in recent if s in ["negative", "angry"])
+        percentage_negative = negative_count / len(recent)
+        if percentage_negative >= 0.7:  # Escalate if 70% or more are negative/angry
+            logger.info(f"Escalation triggered: {percentage_negative:.1%} of last {settings.escalation_negative_turns} turns were negative/angry")
             return build_escalation_response(
                 session,
-                reason=f"Customer was negative for {settings.escalation_negative_turns} consecutive turns"
+                reason=f"{percentage_negative:.1%} of last {settings.escalation_negative_turns} turns were negative/angry"
             )
 
     # ── Rule 3: average sentiment below threshold ────────
@@ -63,13 +62,13 @@ def check_escalation(session: dict) -> dict:
             reason=f"Average sentiment score {avg_score:.2f} below threshold {settings.escalation_sentiment_threshold}"
         )
 
-    # ── Rule 4: too many turns without resolution ────────
-    customer_turns = [t for t in turns if t["role"] == "customer"]
-    if len(customer_turns) >= 8:
-        logger.info(f"Escalation triggered: {len(customer_turns)} turns without resolution")
+    # ── Rule 5: specific intents that require escalation ──
+    escalation_intents = ["complaint", "refund_request", "escalation"]
+    if current_intent and current_intent.lower() in escalation_intents:
+        logger.info(f"Escalation triggered: intent '{current_intent}' requires human | call: {session['call_id']}")
         return build_escalation_response(
             session,
-            reason="Call exceeded 8 turns without resolution"
+            reason=f"Intent '{current_intent}' flagged for escalation"
         )
 
     # no escalation needed
@@ -80,6 +79,7 @@ def check_escalation(session: dict) -> dict:
     }
 
 
+
 def build_escalation_response(session: dict, reason: str) -> dict:
     """
     Builds the escalation response + human agent brief.
@@ -88,15 +88,18 @@ def build_escalation_response(session: dict, reason: str) -> dict:
 
     # empathetic message to customer
     language = session.get("language", "en")
+    customer_name = session.get("customer_name", "")
+    name = customer_name if customer_name and customer_name != "Customer" else ""
+    greeting = f"Hello {name}, " if name else ""
     if language == "hi" or language == "hinglish":
         message = (
-            "Main samajh sakta hoon aap pareshan hain. "
+            f"{greeting}Main samajh sakta hoon aap pareshan hain. "
             "Main aapko apne senior agent se connect kar raha hoon "
             "jo aapki poori madad karenge. Kripya ek moment hold karein."
         )
     else:
         message = (
-            "I completely understand your frustration and I sincerely apologize. "
+            f"{greeting}I completely understand your frustration and I sincerely apologize. "
             "Let me connect you with a senior support specialist right away "
             "who will be able to fully resolve this for you. "
             "Please hold for just a moment."

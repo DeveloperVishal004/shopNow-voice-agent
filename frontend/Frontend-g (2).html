@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ShopNow · Priya AI Support</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+
+<style>
+/* ─────────── RESET + ROOT ─────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #040d1a;
+  --surface:      rgba(8, 22, 48, 0.7);
+  --glass:        rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.09);
+  --blue-deep:    #0a1f44;
+  --blue:         #1a6cf4;
+  --blue-light:   #4fa3ff;
+  --blue-glow:    rgba(26,108,244,0.35);
+  --cyan:         #22d3ee;
+  --purple:       #a78bfa;
+  --purple-dim:   rgba(167,139,250,0.2);
+  --text:         #e8f0ff;
+  --text-muted:   rgba(200,215,255,0.5);
+  --text-dim:     rgba(200,215,255,0.25);
+  --green:        #34d399;
+  --red:          #f87171;
+  --orange:       #fb923c;
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+  --radius:       16px;
+  --radius-lg:    24px;
+  --radius-xl:    32px;
+}
+
+html, body { height: 100%; width: 100%; overflow: hidden; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  position: relative;
+}
+
+/* ─── BACKGROUND MESH ─── */
+.bg-mesh {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 10%, rgba(26,108,244,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 85%, rgba(167,139,250,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(34,211,238,0.05) 0%, transparent 60%),
+    linear-gradient(160deg, #040d1a 0%, #060e1f 50%, #030810 100%);
+}
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(26,108,244,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26,108,244,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 80%);
+}
+
+/* ─── LAYOUT ─── */
+#app {
+  position: relative; z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr 300px;
+  grid-template-rows: 64px 1fr;
+  height: 100vh; width: 100vw;
+  gap: 0;
+}
+
+/* ─── HEADER ─── */
+.header {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px;
+  background: rgba(4,13,26,0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+  position: relative; z-index: 100;
+}
+.header-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.header-logo-mark {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.header-center {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text-muted); font-weight: 300;
+}
+.header-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: blink 2.5s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+.nav-btn {
+  padding: 5px 14px; border-radius: 20px; font-size: 12px;
+  border: 1px solid var(--glass-border); background: var(--glass);
+  color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+  font-family: var(--font-body);
+}
+.nav-btn:hover { border-color: var(--blue); color: var(--blue-light); background: rgba(26,108,244,0.08); }
+.nav-btn.active { background: rgba(26,108,244,0.15); border-color: var(--blue); color: var(--blue-light); }
+
+/* ─── SIDEBAR LEFT ─── */
+.sidebar {
+  padding: 24px 18px;
+  background: rgba(4,13,26,0.6);
+  border-right: 1px solid var(--glass-border);
+  display: flex; flex-direction: column; gap: 24px;
+  overflow-y: auto;
+}
+.sidebar::-webkit-scrollbar { width: 3px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 2px; }
+
+.sidebar-section-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+  color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px;
+}
+
+/* call history items */
+.history-item {
+  padding: 12px 14px; border-radius: 12px;
+  border: 1px solid transparent;
+  background: var(--glass);
+  cursor: pointer; transition: all 0.2s;
+  margin-bottom: 6px;
+}
+.history-item:hover {
+  border-color: var(--glass-border);
+  background: rgba(255,255,255,0.06);
+}
+.history-item.active {
+  border-color: rgba(26,108,244,0.3);
+  background: rgba(26,108,244,0.08);
+}
+.history-item-title { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+.history-item-meta  { font-size: 11px; color: var(--text-muted); display: flex; gap: 6px; align-items: center; }
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 7px; border-radius: 20px; font-size: 10px; font-weight: 500;
+}
+.badge-green { background: rgba(52,211,153,0.15); color: var(--green); }
+.badge-red   { background: rgba(248,113,113,0.15); color: var(--red); }
+.badge-blue  { background: rgba(79,163,255,0.15);  color: var(--blue-light); }
+.badge-orange{ background: rgba(251,146,60,0.15);  color: var(--orange); }
+
+/* agent info card */
+.agent-card {
+  padding: 16px; border-radius: 16px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  display: flex; align-items: center; gap: 12px;
+}
+.agent-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, #1a6cf4 0%, #a78bfa 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+  box-shadow: 0 0 20px rgba(26,108,244,0.4);
+}
+.agent-info { flex: 1; min-width: 0; }
+.agent-name { font-size: 14px; font-weight: 600; font-family: var(--font-display); }
+.agent-title { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* stats mini row */
+.stats-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.stat-mini {
+  padding: 10px 12px; border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+}
+.stat-mini-val { font-size: 18px; font-weight: 700; font-family: var(--font-display); }
+.stat-mini-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+/* ─── MAIN CENTER ─── */
+.main {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  padding: 32px 24px;
+}
+
+/* PRE-CALL SCREEN */
+.pre-call {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 28px;
+  text-align: center;
+  animation: fadeUp 0.5s ease both;
+}
+@keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+
+.pre-call-title {
+  font-family: var(--font-display);
+  font-size: 36px; font-weight: 800;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #e8f0ff 0%, var(--blue-light) 50%, var(--purple) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.pre-call-sub {
+  font-size: 15px; color: var(--text-muted); font-weight: 300; max-width: 320px;
+}
+
+/* orb — pre-call idle */
+.orb-container {
+  position: relative;
+  width: 220px; height: 220px;
+  display: flex; align-items: center; justify-content: center;
+}
+.orb-ring {
+  position: absolute; border-radius: 50%;
+  border: 1px solid;
+  animation: spin-ring linear infinite;
+  pointer-events: none;
+}
+.orb-ring-1 {
+  width: 220px; height: 220px;
+  border-color: rgba(26,108,244,0.2);
+  animation-duration: 20s;
+}
+.orb-ring-2 {
+  width: 190px; height: 190px;
+  border-color: rgba(167,139,250,0.15);
+  animation-duration: 15s; animation-direction: reverse;
+}
+.orb-ring-3 {
+  width: 160px; height: 160px;
+  border-color: rgba(34,211,238,0.1);
+  animation-duration: 25s;
+}
+@keyframes spin-ring {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.orb {
+  width: 130px; height: 130px; border-radius: 50%;
+  position: relative; z-index: 2;
+  background: radial-gradient(circle at 35% 35%, rgba(79,163,255,0.9), rgba(26,108,244,0.7) 40%, rgba(10,31,68,0.95) 80%);
+  box-shadow:
+    0 0 40px rgba(26,108,244,0.5),
+    0 0 80px rgba(26,108,244,0.2),
+    inset 0 1px 1px rgba(255,255,255,0.25);
+  transition: all 0.4s ease;
+}
+.orb::before {
+  content: '';
+  position: absolute; inset: -3px; border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0%, rgba(79,163,255,0.6) 25%, transparent 50%, rgba(167,139,250,0.4) 75%, transparent 100%);
+  animation: spin-ring 4s linear infinite;
+  z-index: -1;
+}
+.orb::after {
+  content: '';
+  position: absolute;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  top: 18px; left: 24px;
+  filter: blur(8px);
+}
+
+/* orb states */
+.orb.idle {
+  animation: breathe 3.5s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%,100% { box-shadow: 0 0 40px rgba(26,108,244,0.5), 0 0 80px rgba(26,108,244,0.2), inset 0 1px 1px rgba(255,255,255,0.25); transform: scale(1); }
+  50%     { box-shadow: 0 0 55px rgba(26,108,244,0.65), 0 0 100px rgba(26,108,244,0.3), inset 0 1px 1px rgba(255,255,255,0.25); transform: scale(1.03); }
+}
+
+.orb.listening {
+  background: radial-gradient(circle at 35% 35%, rgba(52,211,153,0.9), rgba(16,185,129,0.7) 40%, rgba(4,30,20,0.95) 80%);
+  box-shadow:
+    0 0 50px rgba(52,211,153,0.6),
+    0 0 100px rgba(52,211,153,0.25),
+    inset 0 1px 1px rgba(255,255,255,0.25);
+  animation: listen-pulse 0.8s ease-in-out infinite alternate;
+}
+@keyframes listen-pulse {
+  from { transform: scale(1); box-shadow: 0 0 50px rgba(52,211,153,0.6), 0 0 100px rgba(52,211,153,0.25), inset 0 1px 1px rgba(255,255,255,0.2); }
+  to   { transform: scale(1.06); box-shadow: 0 0 70px rgba(52,211,153,0.8), 0 0 140px rgba(52,211,153,0.35), inset 0 1px 1px rgba(255,255,255,0.3); }
+}
+
+.orb.speaking {
+  background: radial-gradient(circle at 35% 35%, rgba(167,139,250,0.95), rgba(139,92,246,0.75) 40%, rgba(20,10,50,0.95) 80%);
+  box-shadow:
+    0 0 50px rgba(139,92,246,0.6),
+    0 0 100px rgba(139,92,246,0.25),
+    inset 0 1px 1px rgba(255,255,255,0.25);
+  animation: speak-ripple 1.2s ease-in-out infinite;
+}
+@keyframes speak-ripple {
+  0%,100% { transform: scale(1); }
+  25%     { transform: scale(1.05); }
+  75%     { transform: scale(0.97); }
+}
+
+.orb.thinking {
+  background: radial-gradient(circle at 35% 35%, rgba(251,146,60,0.9), rgba(234,88,12,0.7) 40%, rgba(30,15,5,0.95) 80%);
+  box-shadow: 0 0 50px rgba(251,146,60,0.5), 0 0 100px rgba(251,146,60,0.2), inset 0 1px 1px rgba(255,255,255,0.25);
+  animation: think-spin 1s linear infinite;
+}
+@keyframes think-spin {
+  from { filter: hue-rotate(0deg); }
+  to   { filter: hue-rotate(30deg); }
+}
+
+.orb.error {
+  background: radial-gradient(circle at 35% 35%, rgba(248,113,113,0.9), rgba(220,38,38,0.7) 40%, rgba(30,5,5,0.95) 80%);
+  box-shadow: 0 0 40px rgba(220,38,38,0.5), 0 0 80px rgba(220,38,38,0.2), inset 0 1px 1px rgba(255,255,255,0.25);
+}
+
+/* ripple waves around orb during speaking */
+.orb-wave {
+  position: absolute; border-radius: 50%;
+  border: 1px solid rgba(139,92,246,0.3);
+  animation: wave-expand 2s ease-out infinite;
+  pointer-events: none;
+  display: none;
+}
+.orb.speaking ~ .orb-wave { display: block; }
+.orb-wave:nth-child(1) { width: 140px; height: 140px; animation-delay: 0s; }
+.orb-wave:nth-child(2) { width: 160px; height: 160px; animation-delay: 0.5s; }
+.orb-wave:nth-child(3) { width: 180px; height: 180px; animation-delay: 1s; }
+@keyframes wave-expand {
+  from { transform: scale(1); opacity: 0.6; }
+  to   { transform: scale(1.5); opacity: 0; }
+}
+
+/* ─ orb icon ─ */
+.orb-icon {
+  position: absolute; z-index: 3;
+  font-size: 30px;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 2px 12px rgba(0,0,0,0.5));
+}
+
+/* status tag below orb */
+.status-tag {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 18px; border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  font-size: 13px; font-weight: 500;
+  letter-spacing: 0.2px;
+  transition: all 0.4s ease;
+  color: var(--text-muted);
+}
+.status-tag.connected   { border-color: rgba(52,211,153,0.3); color: var(--green); background: rgba(52,211,153,0.06); }
+.status-tag.listening   { border-color: rgba(52,211,153,0.4); color: var(--green); background: rgba(52,211,153,0.08); }
+.status-tag.speaking    { border-color: rgba(139,92,246,0.4); color: var(--purple); background: rgba(139,92,246,0.08); }
+.status-tag.thinking    { border-color: rgba(251,146,60,0.4); color: var(--orange); background: rgba(251,146,60,0.08); }
+.status-tag.error       { border-color: rgba(248,113,113,0.4); color: var(--red); background: rgba(248,113,113,0.06); }
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: currentColor;
+  animation: blink 2s infinite;
+}
+.status-tag.listening .status-dot { animation: blink 0.5s infinite; }
+.status-tag.speaking  .status-dot { animation: blink 0.8s infinite; }
+
+/* ─── WAVEFORM BARS ─── */
+.waveform {
+  display: flex; align-items: center; justify-content: center;
+  gap: 3px; height: 48px; width: 200px;
+  margin: 0 auto;
+}
+.wave-bar {
+  width: 3px; border-radius: 2px;
+  background: linear-gradient(to top, var(--blue), var(--cyan));
+  min-height: 3px; height: 3px;
+  transition: height 0.06s ease;
+}
+.wave-bar.active {
+  animation: wave-idle 1.8s ease-in-out infinite;
+}
+@keyframes wave-idle {
+  0%,100% { height: 3px; }
+  50%      { height: 16px; }
+}
+/* stagger bars */
+.wave-bar:nth-child(2n)   { animation-delay: 0.15s; }
+.wave-bar:nth-child(3n)   { animation-delay: 0.3s; }
+.wave-bar:nth-child(4n)   { animation-delay: 0.1s; }
+.wave-bar:nth-child(5n)   { animation-delay: 0.25s; }
+
+/* ─── MIC BUTTON ─── */
+.mic-area { display: flex; align-items: center; gap: 20px; }
+.mic-btn {
+  width: 72px; height: 72px; border-radius: 50%;
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  position: relative;
+  transition: all 0.25s ease;
+  outline: none;
+}
+.mic-btn::before {
+  content: '';
+  position: absolute; inset: -4px; border-radius: 50%;
+  opacity: 0; transition: opacity 0.25s;
+}
+.mic-btn:hover::before { opacity: 1; }
+
+.mic-btn.idle {
+  background: linear-gradient(135deg, var(--blue) 0%, #0e4ac4 100%);
+  box-shadow: 0 4px 24px rgba(26,108,244,0.5), 0 0 0 1px rgba(79,163,255,0.2);
+}
+.mic-btn.idle::before {
+  background: rgba(26,108,244,0.25);
+  animation: mic-glow 2.5s ease-in-out infinite;
+}
+@keyframes mic-glow {
+  0%,100% { transform: scale(1); opacity: 0.5; }
+  50%      { transform: scale(1.3); opacity: 0; }
+}
+.mic-btn.idle:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 32px rgba(26,108,244,0.65), 0 0 0 1px rgba(79,163,255,0.3);
+}
+
+.mic-btn.recording {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  box-shadow: 0 4px 24px rgba(220,38,38,0.55), 0 0 0 1px rgba(248,113,113,0.3);
+  animation: rec-pulse 1.1s ease-in-out infinite;
+}
+@keyframes rec-pulse {
+  0%,100% { box-shadow: 0 4px 24px rgba(220,38,38,0.55), 0 0 0 1px rgba(248,113,113,0.3); }
+  50%      { box-shadow: 0 4px 40px rgba(220,38,38,0.8), 0 0 0 8px rgba(220,38,38,0.1); }
+}
+
+.mic-btn:disabled {
+  background: rgba(255,255,255,0.06);
+  box-shadow: none; cursor: not-allowed;
+  opacity: 0.5;
+}
+.mic-btn:disabled:hover { transform: none; }
+
+.mic-side-btn {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid var(--glass-border); background: var(--glass);
+  color: var(--text-muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; transition: all 0.2s;
+}
+.mic-side-btn:hover {
+  border-color: rgba(79,163,255,0.4); color: var(--blue-light);
+  background: rgba(26,108,244,0.08); transform: translateY(-1px);
+}
+
+/* ─── PHONE INPUT ─── */
+.phone-input-wrap { position: relative; width: 280px; }
+.phone-input {
+  width: 100%; padding: 14px 16px 14px 44px;
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  color: var(--text); font-family: var(--font-body); font-size: 15px;
+  outline: none; transition: all 0.25s;
+}
+.phone-input::placeholder { color: var(--text-dim); }
+.phone-input:focus {
+  border-color: rgba(26,108,244,0.5);
+  background: rgba(26,108,244,0.05);
+  box-shadow: 0 0 0 3px rgba(26,108,244,0.1);
+}
+.phone-input-icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); font-size: 16px; pointer-events: none;
+}
+
+.call-btn {
+  padding: 14px 36px; border-radius: 14px; border: none;
+  background: linear-gradient(135deg, var(--blue) 0%, #6d28d9 100%);
+  color: #fff; font-family: var(--font-display); font-weight: 600;
+  font-size: 15px; letter-spacing: 0.2px;
+  cursor: pointer; transition: all 0.25s;
+  box-shadow: 0 4px 24px rgba(26,108,244,0.4);
+  position: relative; overflow: hidden;
+}
+.call-btn::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+  opacity: 0; transition: opacity 0.2s;
+}
+.call-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 36px rgba(26,108,244,0.55);
+}
+.call-btn:hover::after { opacity: 1; }
+
+.hang-btn {
+  padding: 10px 22px; border-radius: 10px; border: none;
+  background: rgba(220,38,38,0.12);
+  border: 1px solid rgba(248,113,113,0.2);
+  color: var(--red); font-family: var(--font-body); font-weight: 500;
+  font-size: 13px; cursor: pointer; transition: all 0.2s;
+}
+.hang-btn:hover {
+  background: rgba(220,38,38,0.2); border-color: rgba(248,113,113,0.4);
+  transform: translateY(-1px);
+}
+
+/* ─── RIGHT PANEL — TRANSCRIPT ─── */
+.panel-right {
+  padding: 20px 18px;
+  background: rgba(4,13,26,0.6);
+  border-left: 1px solid var(--glass-border);
+  display: flex; flex-direction: column; gap: 16px;
+  overflow: hidden;
+}
+.panel-title {
+  font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+  color: var(--text-dim); text-transform: uppercase;
+}
+
+.transcript-scroll {
+  flex: 1; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.transcript-scroll::-webkit-scrollbar { width: 3px; }
+.transcript-scroll::-webkit-scrollbar-track { background: transparent; }
+.transcript-scroll::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 2px; }
+
+.msg {
+  display: flex; flex-direction: column; gap: 4px;
+  animation: msg-in 0.3s ease both;
+}
+@keyframes msg-in { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+
+.msg.customer { align-items: flex-end; }
+.msg.agent    { align-items: flex-start; }
+
+.msg-bubble {
+  max-width: 90%; padding: 10px 13px; border-radius: 14px;
+  font-size: 13px; line-height: 1.5; font-weight: 400;
+}
+.msg.customer .msg-bubble {
+  background: rgba(26,108,244,0.18);
+  border: 1px solid rgba(26,108,244,0.25);
+  border-bottom-right-radius: 4px;
+  color: #cfe1ff;
+}
+.msg.agent .msg-bubble {
+  background: rgba(167,139,250,0.12);
+  border: 1px solid rgba(167,139,250,0.2);
+  border-bottom-left-radius: 4px;
+  color: #e5d8ff;
+}
+.msg-meta {
+  font-size: 10px; color: var(--text-dim);
+  display: flex; gap: 5px; align-items: center; padding: 0 2px;
+}
+.intent-tag {
+  display: inline-flex; align-items: center;
+  padding: 1px 6px; border-radius: 4px; font-size: 10px;
+  background: rgba(26,108,244,0.15); color: var(--blue-light);
+}
+.sentiment-icon { font-size: 9px; }
+
+.no-transcript {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px; color: var(--text-dim); text-align: center;
+}
+.no-transcript-icon { font-size: 32px; opacity: 0.3; }
+.no-transcript p { font-size: 12px; max-width: 180px; line-height: 1.6; }
+
+/* ─── CALL INFO BAR (active call) ─── */
+.call-info-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 18px;
+  background: rgba(52,211,153,0.05);
+  border: 1px solid rgba(52,211,153,0.15);
+  border-radius: 12px; margin-bottom: -8px;
+  font-size: 13px;
+}
+.call-info-bar.escalated {
+  background: rgba(251,146,60,0.05);
+  border-color: rgba(251,146,60,0.2);
+}
+.call-timer { font-family: var(--font-display); font-size: 14px; color: var(--green); letter-spacing: 1px; }
+
+/* escalation card */
+.escalation-card {
+  padding: 20px; border-radius: 16px;
+  border: 1px solid rgba(251,146,60,0.3);
+  background: rgba(251,146,60,0.05);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.escalation-title {
+  font-family: var(--font-display); font-size: 16px; font-weight: 700;
+  color: var(--orange); display: flex; align-items: center; gap: 8px;
+}
+.esc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.esc-cell { padding: 10px 12px; border-radius: 10px; background: var(--glass); border: 1px solid var(--glass-border); }
+.esc-cell-label { font-size: 10px; color: var(--text-dim); margin-bottom: 3px; }
+.esc-cell-val   { font-size: 13px; font-weight: 500; }
+
+/* ─── LOG BOX ─── */
+.log-box {
+  padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: rgba(0,0,0,0.2);
+  font-size: 11px; color: var(--text-dim);
+  max-height: 80px; overflow-y: auto;
+  font-family: 'Courier New', monospace;
+  line-height: 1.7;
+}
+.log-box::-webkit-scrollbar { width: 2px; }
+.log-box::-webkit-scrollbar-thumb { background: var(--glass-border); }
+.log-entry-c   { color: var(--blue-light); }
+.log-entry-a   { color: var(--purple); }
+.log-entry-sys { color: var(--text-dim); font-style: italic; }
+
+/* ─── MISC UTILS ─── */
+.hidden { display: none !important; }
+.fade-in { animation: fadeUp 0.4s ease both; }
+
+/* ─── DASHBOARD PANEL (right) ─── */
+.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.metric-card {
+  padding: 14px 14px; border-radius: 12px;
+  border: 1px solid var(--glass-border); background: var(--glass);
+}
+.metric-val   { font-family: var(--font-display); font-size: 22px; font-weight: 700; }
+.metric-label { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+.metric-delta { font-size: 10px; margin-top: 4px; }
+.metric-delta.pos { color: var(--green); }
+.metric-delta.neg { color: var(--red); }
+
+.progress-bar-wrap { margin-top: 8px; }
+.progress-label-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+.progress-track {
+  height: 6px; border-radius: 3px; background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+  transition: width 0.6s ease;
+}
+
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="bg-grid"></div>
+
+<div id="app">
+
+  <header class="header">
+    <div class="header-logo">
+      <div class="header-logo-mark">🛍</div>
+      ShopNow
+    </div>
+    <div class="header-center">
+      <div class="header-dot" id="hdrDot"></div>
+      <span id="hdrStatus">System operational</span>
+    </div>
+    <div class="header-right">
+      <button class="nav-btn active" onclick="switchView('call')">Call</button>
+      <button class="nav-btn" onclick="switchView('dashboard')">Dashboard</button>
+      <button class="nav-btn" onclick="switchView('escalations')">Escalations</button>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <div class="agent-card">
+      <div class="agent-avatar">🎧</div>
+      <div class="agent-info">
+        <div class="agent-name">Priya</div>
+        <div class="agent-title">ShopNow AI Support</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar-section-label">Session</div>
+      <div class="stats-row">
+        <div class="stat-mini">
+          <div class="stat-mini-val" id="sbTotalCalls">—</div>
+          <div class="stat-mini-label">Total Calls</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-val" id="sbFCR">—</div>
+          <div class="stat-mini-label">FCR Rate</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-val" id="sbEscalated">—</div>
+          <div class="stat-mini-label">Escalated</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-val" id="sbSentiment">—</div>
+          <div class="stat-mini-label">Avg Sentiment</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar-section-label">Recent Calls</div>
+      <div id="historyList">
+        <div style="font-size:12px;color:var(--text-dim);padding:8px 0">No recent calls</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main" id="mainView">
+
+    <div id="viewCall">
+
+      <div id="preCall" class="pre-call">
+        <div class="orb-container">
+          <div class="orb-ring orb-ring-1"></div>
+          <div class="orb-ring orb-ring-2"></div>
+          <div class="orb-ring orb-ring-3"></div>
+          <div class="orb idle" id="orb">
+            <span class="orb-icon">🎧</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="pre-call-title">Talk to Priya</div>
+          <div class="pre-call-sub">AI-powered support, available instantly — just pick up and speak.</div>
+        </div>
+
+        <div class="phone-input-wrap">
+          <span class="phone-input-icon">📞</span>
+          <input class="phone-input" id="phoneInput" type="tel" placeholder="+91 98765 43210" value="+919876543210" />
+        </div>
+
+        <button class="call-btn" id="callBtn" onclick="startCall()">
+          ✦ Start Call
+        </button>
+      </div>
+
+      <div id="activeCall" class="hidden fade-in" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:20px;">
+
+        <div class="call-info-bar" id="callInfoBar">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="header-dot"></div>
+            <span id="callInfoLabel" style="font-size:13px;font-weight:500;color:var(--green)">Connected to Priya</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span class="call-timer" id="callTimer">0:00</span>
+            <button class="hang-btn" onclick="hangUp()">⬛ Hang Up</button>
+          </div>
+        </div>
+
+        <div class="escalation-card hidden" id="escalationCard">
+          <div class="escalation-title">⚠ Transferred to Human Agent</div>
+          <div class="esc-grid">
+            <div class="esc-cell"><div class="esc-cell-label">Customer</div><div class="esc-cell-val" id="escName">—</div></div>
+            <div class="esc-cell"><div class="esc-cell-label">Intent</div><div class="esc-cell-val" id="escIntent">—</div></div>
+            <div class="esc-cell"><div class="esc-cell-label">Tone</div><div class="esc-cell-val" id="escTone">—</div></div>
+          </div>
+        </div>
+
+        <div class="orb-container" style="width:180px;height:180px;">
+          <div class="orb idle" id="orbActive" style="width:110px;height:110px;">
+            <span class="orb-icon">🎧</span>
+          </div>
+          <div class="orb-wave"></div>
+          <div class="orb-wave"></div>
+          <div class="orb-wave"></div>
+        </div>
+
+        <div class="status-tag" id="statusTag">
+          <div class="status-dot"></div>
+          <span id="statusText">Connecting…</span>
+        </div>
+
+        <div class="waveform" id="waveform">
+          </div>
+
+        <div class="mic-area">
+          <button class="mic-side-btn" id="muteBtn" onclick="toggleMic()" title="Mute/Unmute">🎙</button>
+          <button class="mic-btn idle" id="micBtn" onclick="toggleMic()" disabled>🎤</button>
+          <button class="mic-side-btn" onclick="refreshTranscript()" title="Refresh transcript">↻</button>
+        </div>
+
+        <div class="log-box" id="logBox" style="width:100%;max-width:480px;"></div>
+
+        <div id="voiceCore" style="display:none;"></div>
+      </div>
+
+    </div><div id="viewDashboard" class="hidden fade-in" style="width:100%;height:100%;overflow-y:auto;padding:8px;">
+      <div style="margin-bottom:20px;">
+        <h2 style="font-family:var(--font-display);font-size:22px;font-weight:700;margin-bottom:4px;">Live Operations</h2>
+        <p style="font-size:13px;color:var(--text-muted);">Real-time analytics for ShopNow support</p>
+      </div>
+
+      <div class="metric-grid" style="margin-bottom:16px;">
+        <div class="metric-card">
+          <div class="metric-val" id="dTotalCalls">—</div>
+          <div class="metric-label">Total Calls</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" id="dFCR">—</div>
+          <div class="metric-label">FCR Rate</div>
+          <div class="metric-delta pos" id="dFCRDelta"></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" id="dEscalated">—</div>
+          <div class="metric-label">Escalations</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" id="dSentiment">—</div>
+          <div class="metric-label">Avg Sentiment</div>
+        </div>
+      </div>
+
+      <div style="padding:16px;border-radius:16px;border:1px solid var(--glass-border);background:var(--glass);margin-bottom:12px;">
+        <div class="panel-title" style="margin-bottom:14px;">Calls by Intent</div>
+        <div id="intentBars"></div>
+      </div>
+
+      <div style="padding:16px;border-radius:16px;border:1px solid var(--glass-border);background:var(--glass);">
+        <div class="panel-title" style="margin-bottom:14px;">Calls by Language</div>
+        <div id="langBars"></div>
+      </div>
+    </div>
+
+    <div id="viewEscalations" class="hidden fade-in" style="width:100%;height:100%;overflow-y:auto;padding:8px;">
+      <div style="margin-bottom:20px;">
+        <h2 style="font-family:var(--font-display);font-size:22px;font-weight:700;margin-bottom:4px;">Escalation Log</h2>
+        <p style="font-size:13px;color:var(--text-muted);">Full context for human handoff</p>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <div class="phone-input-wrap" style="flex:1;">
+          <span class="phone-input-icon">🔍</span>
+          <input class="phone-input" id="escCallIdInput" placeholder="Enter call ID…" />
+        </div>
+        <button class="call-btn" style="flex-shrink:0;padding:14px 24px;font-size:13px;" onclick="fetchEscalation()">Fetch Brief</button>
+      </div>
+
+      <div id="escResult"></div>
+    </div>
+
+  </main>
+
+  <aside class="panel-right">
+    <div class="panel-title">Transcript</div>
+    <div class="transcript-scroll" id="transcriptScroll">
+      <div class="no-transcript" id="noTranscript">
+        <div class="no-transcript-icon">💬</div>
+        <p>Conversation will appear here during your call</p>
+      </div>
+    </div>
+
+    <button class="nav-btn" style="width:100%;text-align:center;padding:8px;" onclick="refreshTranscript()">↻ Refresh</button>
+  </aside>
+
+</div><script>
+/* ═══════════════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════════════ */
+const API_BASE = 'http://localhost:8000';
+const WS_BASE  = 'ws://localhost:8000';
+const BASELINE_FCR = 52;
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let callId        = null;
+let messages      = [];
+let isEscalated   = false;
+let callStartTime = null;
+let timerInterval = null;
+let orbState      = 'idle';   // idle | listening | speaking | thinking | error | connected
+let historyItems  = [];
+
+/* WebSocket / audio state */
+let ws               = null;
+let audioCtx         = null;
+let mediaStream      = null;
+let processor        = null;
+let analyser         = null;
+let isRecording      = false;
+let isAgentSpeaking  = false;
+let speechActive     = false;
+let lastSpeechTs     = 0;
+let utteranceStartTs = 0;
+
+const SILENCE_THRESHOLD = 0.012;
+const SILENCE_HOLD_MS   = 800;
+const MIN_UTTERANCE_MS  = 250;
+
+let playbackCtx   = null;
+let nextStartTime = 0;
+
+/* Waveform bars */
+let animFrameId = null;
+let waveBars    = [];
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+window.addEventListener('load', () => {
+  buildWaveform();
+  fetchDailyReport();
+  setInterval(fetchDailyReport, 30000);
+});
+
+function buildWaveform() {
+  const w = document.getElementById('waveform');
+  w.innerHTML = '';
+  waveBars = [];
+  for (let i = 0; i < 28; i++) {
+    const b = document.createElement('div');
+    b.className = 'wave-bar active';
+    w.appendChild(b);
+    waveBars.push(b);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   VIEW SWITCHING
+═══════════════════════════════════════════════ */
+function switchView(v) {
+  ['call','dashboard','escalations'].forEach(n => {
+    document.getElementById('view' + n.charAt(0).toUpperCase() + n.slice(1)).classList.add('hidden');
+  });
+  document.getElementById('view' + v.charAt(0).toUpperCase() + v.slice(1)).classList.remove('hidden');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  if (v === 'dashboard') fetchDailyReport();
+}
+
+/* ═══════════════════════════════════════════════
+   ORB STATE
+═══════════════════════════════════════════════ */
+const ORB_CLASSES = ['idle','listening','speaking','thinking','error','connected'];
+
+function setOrbState(state, text) {
+  orbState = state;
+  const orb = document.getElementById('orbActive');
+  if (!orb) return;
+  ORB_CLASSES.forEach(c => orb.classList.remove(c));
+  if (state !== 'connected') orb.classList.add(state);
+  else orb.classList.add('idle');
+
+  const tag = document.getElementById('statusTag');
+  const txt = document.getElementById('statusText');
+  if (tag && txt) {
+    ORB_CLASSES.forEach(c => tag.classList.remove(c));
+    tag.classList.add(state);
+    txt.textContent = text || state;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   LOG
+═══════════════════════════════════════════════ */
+function appendLog(msg, cls = 'sys') {
+  const box = document.getElementById('logBox');
+  if (!box) return;
+  const d = document.createElement('div');
+  d.className = 'log-entry-' + cls;
+  d.textContent = msg;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+
+/* ═══════════════════════════════════════════════
+   TRANSCRIPT
+═══════════════════════════════════════════════ */
+function renderTranscript() {
+  const scroll = document.getElementById('transcriptScroll');
+  const none   = document.getElementById('noTranscript');
+
+  if (!messages.length) {
+    none.classList.remove('hidden');
+    return;
+  }
+  none.classList.add('hidden');
+
+  // keep existing + append new
+  const existing = scroll.querySelectorAll('.msg').length;
+  messages.slice(existing).forEach(msg => {
+    const sentimentIcon = {
+      positive: '🟢', neutral: '🔵', negative: '🟠', angry: '🔴'
+    }[msg.sentiment] || '';
+
+    const el = document.createElement('div');
+    el.className = `msg ${msg.role}`;
+    el.innerHTML = `
+      <div class="msg-bubble">${escHtml(msg.text)}</div>
+      <div class="msg-meta">
+        ${msg.role === 'customer' ? `
+          <span class="sentiment-icon">${sentimentIcon}</span>
+          ${msg.sentiment ? `<span>${msg.sentiment}</span>` : ''}
+          ${msg.intent   ? `<span class="intent-tag">${msg.intent.replace(/_/g,' ')}</span>` : ''}
+        ` : `<span style="color:var(--purple);font-size:10px;">Priya</span>`}
+      </div>`;
+    scroll.appendChild(el);
+  });
+
+  scroll.scrollTop = scroll.scrollHeight;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function refreshTranscript() {
+  if (!callId) return;
+  try {
+    const r = await fetch(`${API_BASE}/call/session/${callId}`);
+    if (r.ok) {
+      const d = await r.json();
+      messages = (d.turns || []).map(t => ({
+        role: t.role, text: t.text,
+        intent: t.intent || '', sentiment: t.sentiment || ''
+      }));
+      renderTranscript();
+    }
+  } catch(e) { /* backend may not be running */ }
+}
+
+/* ═══════════════════════════════════════════════
+   CALL LIFECYCLE
+═══════════════════════════════════════════════ */
+async function startCall() {
+  const phone = document.getElementById('phoneInput').value.trim();
+  if (!phone) return;
+
+  document.getElementById('callBtn').disabled = true;
+  document.getElementById('callBtn').textContent = 'Connecting…';
+
+  try {
+    const r = await fetch(`${API_BASE}/call/start`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ customer_phone: phone })
+    });
+
+    if (r.ok) {
+      const d = await r.json();
+      callId = d.call_id;
+      messages = [];
+      isEscalated = false;
+      enterActiveCall();
+    } else {
+      alert('Could not start call. Is the backend running?');
+      resetCallBtn();
+    }
+  } catch(e) {
+    alert('Backend unreachable: ' + e.message);
+    resetCallBtn();
+  }
+}
+
+function resetCallBtn() {
+  const b = document.getElementById('callBtn');
+  b.disabled = false; b.textContent = '✦ Start Call';
+}
+
+function enterActiveCall() {
+  document.getElementById('preCall').classList.add('hidden');
+  document.getElementById('activeCall').classList.remove('hidden');
+
+  // start timer
+  callStartTime = Date.now();
+  timerInterval = setInterval(updateTimer, 1000);
+
+  setOrbState('connected', 'Connecting…');
+  connectWebSocket();
+}
+
+function updateTimer() {
+  const secs = Math.floor((Date.now() - callStartTime) / 1000);
+  const m = Math.floor(secs / 60), s = secs % 60;
+  document.getElementById('callTimer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+async function hangUp() {
+  if (!callId) return;
+  try {
+    await fetch(`${API_BASE}/call/end`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ call_id: callId, outcome: 'resolved' })
+    });
+  } catch(e) {}
+
+  closeCall();
+}
+
+function closeCall() {
+  // add to history
+  if (callId) {
+    historyItems.unshift({
+      id: callId,
+      phone: document.getElementById('phoneInput').value,
+      status: isEscalated ? 'escalated' : 'resolved',
+      time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})
+    });
+    renderHistory();
+  }
+
+  callId = null;
+  messages = [];
+  isEscalated = false;
+  clearInterval(timerInterval);
+  stopMic();
+  if (ws) { ws.close(); ws = null; }
+  if (playbackCtx) { playbackCtx.close(); playbackCtx = null; }
+
+  document.getElementById('activeCall').classList.add('hidden');
+  document.getElementById('preCall').classList.remove('hidden');
+  document.getElementById('escalationCard').classList.add('hidden');
+  document.getElementById('callInfoBar').classList.remove('escalated');
+
+  // clear transcript panel
+  const scroll = document.getElementById('transcriptScroll');
+  scroll.querySelectorAll('.msg').forEach(el => el.remove());
+  document.getElementById('noTranscript').classList.remove('hidden');
+
+  document.getElementById('logBox').innerHTML = '';
+  fetchDailyReport();
+}
+
+/* ═══════════════════════════════════════════════
+   WEBSOCKET
+═══════════════════════════════════════════════ */
+function connectWebSocket() {
+  const url = `${WS_BASE}/ws/${callId}`;
+  ws = new WebSocket(url);
+  ws.binaryType = 'arraybuffer';
+
+  ws.onopen = () => {
+    setOrbState('connected', 'Connected — tap mic to speak');
+    document.getElementById('micBtn').disabled = false;
+    appendLog('WebSocket connected', 'sys');
+  };
+
+  ws.onmessage = (e) => {
+    if (e.data instanceof ArrayBuffer) {
+      // PCM16 audio from agent
+      isAgentSpeaking = true;
+      setOrbState('speaking', 'Priya is speaking…');
+      appendAndPlay(e.data);
+      return;
+    }
+
+    try {
+      const msg = JSON.parse(e.data);
+
+      if (msg.type === 'transcript') {
+        const entry = {
+          role: msg.role, text: msg.text,
+          intent: msg.intent || '', sentiment: msg.sentiment || ''
+        };
+        messages.push(entry);
+        renderTranscript();
+        appendLog(
+          `${msg.role === 'customer' ? '👤' : '🤖'} ${msg.text.slice(0,60)}${msg.text.length>60?'…':''}`,
+          msg.role === 'customer' ? 'c' : 'a'
+        );
+        if (msg.role === 'customer') setOrbState('thinking', 'Processing…');
+
+      } else if (msg.type === 'escalation') {
+        isEscalated = true;
+        const brief = msg.escalation_brief || {};
+        document.getElementById('escName').textContent   = brief.customer_name || 'Unknown';
+        document.getElementById('escIntent').textContent = (brief.current_intent||'unknown').replace(/_/g,' ');
+        document.getElementById('escTone').textContent   = brief.recommended_tone || 'empathetic';
+        document.getElementById('escalationCard').classList.remove('hidden');
+        document.getElementById('callInfoBar').classList.add('escalated');
+        document.getElementById('callInfoLabel').textContent = '⚠ Transferred to human agent';
+        document.getElementById('callInfoLabel').style.color = 'var(--orange)';
+        setOrbState('error', 'Transferred…');
+        appendLog('Escalating to human agent…', 'sys');
+
+      } else if (msg.type === 'call_ended') {
+        setOrbState('connected', 'Call ended');
+        appendLog('Call ended by server', 'sys');
+
+      } else if (msg.type === 'error') {
+        setOrbState('error', 'Error occurred');
+        appendLog('Error: ' + msg.message, 'sys');
+      }
+    } catch(err) {
+      appendLog('Parse error: ' + err.message, 'sys');
+    }
+  };
+
+  ws.onclose = () => {
+    setOrbState('error', 'Disconnected');
+    document.getElementById('micBtn').disabled = true;
+    appendLog('Connection closed', 'sys');
+  };
+
+  ws.onerror = () => {
+    setOrbState('error', 'Connection failed');
+    appendLog('WS error — is backend running?', 'sys');
+  };
+}
+
+/* ═══════════════════════════════════════════════
+   MIC
+═══════════════════════════════════════════════ */
+async function toggleMic() {
+  isRecording ? stopMic() : await startMic();
+}
+
+async function startMic() {
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      audio: { channelCount:1, sampleRate:24000, echoCancellation:true, noiseSuppression:true, autoGainControl:true }
+    });
+
+    audioCtx = new AudioContext({ sampleRate: 24000 });
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 64;
+
+    const source = audioCtx.createMediaStreamSource(mediaStream);
+    processor    = audioCtx.createScriptProcessor(2048, 1, 1);
+
+    source.connect(analyser);
+    analyser.connect(processor);
+    processor.connect(audioCtx.destination);
+
+    processor.onaudioprocess = (e) => {
+      if (!isRecording || !ws || ws.readyState !== WebSocket.OPEN) return;
+      const input = e.inputBuffer.getChannelData(0);
+      const rms   = computeRms(input);
+      const now   = Date.now();
+
+      if (isAgentSpeaking) return;
+
+      if (rms > SILENCE_THRESHOLD) {
+        if (!speechActive) {
+          speechActive = true;
+          utteranceStartTs = now;
+          setOrbState('listening', 'Listening…');
+        }
+        lastSpeechTs = now;
+      } else if (speechActive) {
+        const silenceMs   = now - lastSpeechTs;
+        const utteranceMs = now - utteranceStartTs;
+        if (silenceMs >= SILENCE_HOLD_MS && utteranceMs >= MIN_UTTERANCE_MS) {
+          speechActive = false;
+          commitUtterance();
+        }
+      }
+
+      const pcm16 = float32ToPCM16(input);
+      ws.send(pcm16.buffer);
+    };
+
+    isRecording = true;
+    speechActive = false;
+    lastSpeechTs = 0;
+    utteranceStartTs = 0;
+
+    const btn = document.getElementById('micBtn');
+    btn.classList.remove('idle'); btn.classList.add('recording');
+    btn.textContent = '🔇';
+    document.getElementById('muteBtn').textContent = '🎙';
+    setOrbState('listening', 'Auto-listening enabled…');
+    appendLog('Mic enabled — auto silence detection active', 'sys');
+    animateWaveform();
+
+  } catch(err) {
+    setOrbState('error', 'Mic error');
+    appendLog('Mic access failed: ' + err.message, 'sys');
+  }
+}
+
+function stopMic() {
+  const hadPending = speechActive;
+  isRecording = false;
+  speechActive = false;
+  lastSpeechTs = 0;
+  utteranceStartTs = 0;
+
+  if (processor)   { processor.disconnect();   processor = null; }
+  if (analyser)    { analyser.disconnect();     analyser  = null; }
+  if (audioCtx)    { audioCtx.close();          audioCtx  = null; }
+  if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+
+  cancelAnimationFrame(animFrameId);
+  waveBars.forEach(b => { b.style.height = '3px'; b.classList.add('active'); });
+
+  const btn = document.getElementById('micBtn');
+  if (btn) {
+    btn.classList.remove('recording'); btn.classList.add('idle');
+    btn.textContent = '🎤';
+  }
+  if (callId) setOrbState('connected', 'Mic muted');
+  appendLog('Mic muted', 'sys');
+  if (hadPending) commitUtterance();
+}
+
+function commitUtterance() {
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  ws.send(JSON.stringify({ type: 'commit_audio' }));
+  setOrbState('thinking', 'Processing…');
+  appendLog('Silence detected — sending to Priya', 'sys');
+}
+
+/* ═══════════════════════════════════════════════
+   AUDIO PLAYBACK
+═══════════════════════════════════════════════ */
+function initPlaybackCtx() {
+  playbackCtx   = new AudioContext({ sampleRate: 24000 });
+  nextStartTime = playbackCtx.currentTime;
+}
+
+function appendAndPlay(arrayBuffer) {
+  if (!playbackCtx) initPlaybackCtx();
+
+  const pcm16   = new Int16Array(arrayBuffer);
+  const float32 = new Float32Array(pcm16.length);
+  for (let i = 0; i < pcm16.length; i++) float32[i] = pcm16[i] / 32768.0;
+
+  const buf = playbackCtx.createBuffer(1, float32.length, 24000);
+  buf.copyToChannel(float32, 0);
+
+  const src = playbackCtx.createBufferSource();
+  src.buffer = buf;
+  src.connect(playbackCtx.destination);
+
+  const startAt = Math.max(nextStartTime, playbackCtx.currentTime + 0.01);
+  src.start(startAt);
+  nextStartTime = startAt + buf.duration;
+
+  src.onended = () => {
+    if (nextStartTime <= playbackCtx.currentTime + 0.05) {
+      isAgentSpeaking = false;
+      if (isRecording) setOrbState('listening', 'Listening…');
+      else setOrbState('connected', 'Connected — tap mic to speak');
+    }
+  };
+}
+
+/* ═══════════════════════════════════════════════
+   WAVEFORM VISUALIZER
+═══════════════════════════════════════════════ */
+function animateWaveform() {
+  if (!analyser || !isRecording) return;
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(data);
+
+  waveBars.forEach((bar, i) => {
+    const val    = data[Math.floor(i * data.length / waveBars.length)] || 0;
+    const height = Math.max(3, (val / 255) * 44);
+    bar.style.height = height + 'px';
+    bar.classList.remove('active');
+  });
+
+  animFrameId = requestAnimationFrame(animateWaveform);
+}
+
+/* ═══════════════════════════════════════════════
+   AUDIO HELPERS
+═══════════════════════════════════════════════ */
+function float32ToPCM16(float32) {
+  const pcm16 = new Int16Array(float32.length);
+  for (let i = 0; i < float32.length; i++) {
+    const c = Math.max(-1, Math.min(1, float32[i]));
+    pcm16[i] = c < 0 ? c * 0x8000 : c * 0x7FFF;
+  }
+  return pcm16;
+}
+
+function computeRms(float32) {
+  let sum = 0;
+  for (let i = 0; i < float32.length; i++) sum += float32[i] * float32[i];
+  return Math.sqrt(sum / float32.length);
+}
+
+/* ═══════════════════════════════════════════════
+   DASHBOARD — fetch daily report
+═══════════════════════════════════════════════ */
+async function fetchDailyReport() {
+  try {
+    const r = await fetch(`${API_BASE}/report/daily`);
+    if (!r.ok) return;
+    const d = await r.json();
+
+    // sidebar
+    setText('sbTotalCalls', d.total_calls ?? '—');
+    setText('sbFCR',        d.fcr_percent != null ? d.fcr_percent + '%' : '—');
+    setText('sbEscalated',  d.escalated_calls ?? '—');
+    setText('sbSentiment',  d.avg_sentiment != null ? d.avg_sentiment.toFixed(2) : '—');
+
+    // dashboard view
+    setText('dTotalCalls', d.total_calls ?? '—');
+    setText('dFCR',        d.fcr_percent != null ? d.fcr_percent + '%' : '—');
+    setText('dEscalated',  d.escalated_calls ?? '—');
+    setText('dSentiment',  d.avg_sentiment != null ? d.avg_sentiment.toFixed(2) : '—');
+
+    const delta = (d.fcr_percent ?? 0) - BASELINE_FCR;
+    const dEl = document.getElementById('dFCRDelta');
+    if (dEl) {
+      dEl.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1) + '% vs baseline';
+      dEl.className = 'metric-delta ' + (delta >= 0 ? 'pos' : 'neg');
+    }
+
+    // intent bars
+    renderBars('intentBars', d.calls_by_intent || {}, 'var(--blue)');
+    renderBars('langBars',   d.calls_by_language || {}, 'var(--purple)');
+
+  } catch(e) { /* backend offline */ }
+}
+
+function renderBars(containerId, data, color) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const entries = Object.entries(data);
+  if (!entries.length) { el.innerHTML = '<div style="font-size:12px;color:var(--text-dim)">No data yet</div>'; return; }
+  const max = Math.max(...entries.map(e => e[1]), 1);
+  el.innerHTML = entries.map(([k, v]) => `
+    <div class="progress-bar-wrap">
+      <div class="progress-label-row">
+        <span>${k.replace(/_/g,' ')}</span>
+        <span>${v}</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${(v/max*100).toFixed(1)}%;background:${color}"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   ESCALATION LOOKUP
+═══════════════════════════════════════════════ */
+async function fetchEscalation() {
+  const id = document.getElementById('escCallIdInput').value.trim();
+  if (!id) return;
+
+  const result = document.getElementById('escResult');
+  result.innerHTML = '<div style="color:var(--text-muted);font-size:13px">Fetching…</div>';
+
+  try {
+    const r = await fetch(`${API_BASE}/report/escalation/${id}`);
+    if (!r.ok) { result.innerHTML = '<div style="color:var(--red);font-size:13px">No escalation found for this call ID</div>'; return; }
+    const b = await r.json();
+
+    // FIX: The escalation endpoint does not supply 'turns' and can occasionally omit session context for completed calls. 
+    // We seamlessly bridge this link by fetching the session log and safely merging the required data attributes.
+    try {
+        const sessionReq = await fetch(`${API_BASE}/call/session/${id}`);
+        if (sessionReq.ok) {
+            const sessionData = await sessionReq.json();
+            b.turns          = sessionData.turns || [];
+            b.order_context  = sessionData.order_context || b.order_context;
+            b.current_intent = sessionData.current_intent || b.current_intent;
+            b.customer_phone = sessionData.customer_phone || b.customer_phone;
+            b.language       = sessionData.language || b.language;
+        }
+    } catch(err) { /* Suppress, graceful fallback active */ }
+
+    const sentMap = { positive:1, neutral:0, negative:-0.5, angry:-1 };
+    const sentIcons = { positive:'🟢', neutral:'🔵', negative:'🟠', angry:'🔴' };
+    const hist = (b.sentiment_history || []).map(s => `${sentIcons[s]||'⚪'} ${s}`).join(' → ');
+
+    const turns = (b.turns || []).slice(-6).map(t =>
+      t.role === 'customer'
+        ? `<div class="msg customer"><div class="msg-bubble">👤 ${escHtml(t.text)}</div></div>`
+        : `<div class="msg agent"><div class="msg-bubble">🤖 ${escHtml(t.text)}</div></div>`
+    ).join('');
+
+    const order = b.order_context || {};
+    const orderHtml = order.id ? `
+      <div class="esc-grid">
+        <div class="esc-cell"><div class="esc-cell-label">Order ID</div><div class="esc-cell-val">${order.id||'—'}</div></div>
+        <div class="esc-cell"><div class="esc-cell-label">Item</div><div class="esc-cell-val">${order.item_name||'—'}</div></div>
+        <div class="esc-cell"><div class="esc-cell-label">Status</div><div class="esc-cell-val">${order.status||'—'}</div></div>
+      </div>` : '<div style="font-size:12px;color:var(--text-dim)">No order data</div>';
+
+    result.innerHTML = `
+      <div class="escalation-card fade-in">
+        <div class="escalation-title">⚠ Escalation Brief</div>
+        <div class="esc-grid">
+          <div class="esc-cell"><div class="esc-cell-label">Name</div><div class="esc-cell-val">${b.customer_name||'Unknown'}</div></div>
+          <div class="esc-cell"><div class="esc-cell-label">Phone</div><div class="esc-cell-val">${b.customer_phone||'—'}</div></div>
+          <div class="esc-cell"><div class="esc-cell-label">Language</div><div class="esc-cell-val">${(b.language||'en').toUpperCase()}</div></div>
+        </div>
+        <div class="esc-grid">
+          <div class="esc-cell" style="grid-column:1/3">
+            <div class="esc-cell-label">Intent</div>
+            <div class="esc-cell-val">${(b.current_intent||'unknown').replace(/_/g,' ')}</div>
+          </div>
+          <div class="esc-cell">
+            <div class="esc-cell-label">Recommended Tone</div>
+            <div class="esc-cell-val">${b.recommended_tone||'professional'}</div>
+          </div>
+        </div>
+        <div>
+          <div class="esc-cell-label" style="margin-bottom:6px">Sentiment History</div>
+          <div style="font-size:12px;line-height:2">${hist||'—'}</div>
+        </div>
+        <div>
+          <div class="esc-cell-label" style="margin-bottom:8px">Order Context</div>
+          ${orderHtml}
+        </div>
+        ${turns ? `<div><div class="esc-cell-label" style="margin-bottom:8px">Recent Conversation</div><div style="display:flex;flex-direction:column;gap:6px">${turns}</div></div>` : ''}
+      </div>`;
+  } catch(e) {
+    result.innerHTML = `<div style="color:var(--red);font-size:13px">Error: ${e.message}</div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   HISTORY
+═══════════════════════════════════════════════ */
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  if (!historyItems.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-dim);padding:8px 0">No recent calls</div>';
+    return;
+  }
+  el.innerHTML = historyItems.slice(0, 8).map(h => `
+    <div class="history-item">
+      <div class="history-item-title">${escHtml(h.phone)}</div>
+      <div class="history-item-meta">
+        <span class="badge ${h.status==='escalated'?'badge-orange':'badge-green'}">${h.status}</span>
+        <span>${h.time}</span>
+      </div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════ */
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+</script>
+</body>
+</html>

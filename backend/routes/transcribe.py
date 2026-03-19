@@ -3,12 +3,49 @@ import uuid
 import shutil
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from loguru import logger
+from openai import OpenAI
 from backend.services.stt import transcribe_audio
+from backend.config import settings
 
 router = APIRouter()
+client = OpenAI(api_key=settings.openai_api_key)
 
 TEMP_DIR = "./temp_audio"
 os.makedirs(TEMP_DIR, exist_ok=True)
+
+
+def translate_to_english(text: str, source_language: str) -> str:
+    """
+    Translates text to English using OpenAI API.
+    If text is already in English, returns as-is.
+    """
+    if source_language == "en" or source_language is None:
+        return text
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a translator. Translate the user's text to English. Return only the translated text, nothing else."
+                },
+                {
+                    "role": "user",
+                    "content": text
+                }
+            ],
+            temperature=0.3
+        )
+        
+        translated_text = response.choices[0].message.content.strip()
+        logger.info(f"Translated from {source_language} to English | original: {text[:50]}... | translated: {translated_text[:50]}...")
+        return translated_text
+        
+    except Exception as e:
+        logger.error(f"Translation failed: {e}")
+        return text  # fallback to original text if translation fails
+
 
 @router.post("/")
 async def transcribe(
@@ -45,11 +82,17 @@ async def transcribe(
                 status_code=500,
                 detail=result.get("error", "Transcription failed")
             )
-
+        
+        # translate text to English if not already in English
+        detected_language = result["language"]
+        original_text = result["text"]
+        translated_text = translate_to_english(original_text, detected_language)
+        
         return {
-            "text":     result["text"],
-            "language": result["language"],
-            "filename": audio.filename
+            "text":        translated_text,
+            "original_text": original_text,
+            "language":    detected_language,
+            "filename":    audio.filename
         }
 
     finally:
