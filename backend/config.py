@@ -5,6 +5,9 @@ class Settings(BaseSettings):
     # OpenAI
     openai_api_key: str
 
+    # Sarvam AI
+    sarvam_api_key: str
+
     # Database
     database_url: str = "./shopnow.db"
 

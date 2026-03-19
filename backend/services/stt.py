@@ -1,44 +1,39 @@
-from openai import OpenAI
+import requests
 from loguru import logger
 from backend.config import settings
-
-client = OpenAI(api_key=settings.openai_api_key)
 
 LANGUAGE_MAP = {
     "hindi":    "hi",
     "english":  "en",
-    "hinglish": "hi",  # whisper treats hinglish as hindi
+    "hinglish": "hi",  
     "tamil":    "ta",
     "telugu":   "te",
     "bengali":  "bn",
 }
 
 def transcribe_audio(audio_file_path: str, language: str = None) -> dict:
-    """
-    Takes an audio file path, sends to Whisper, returns
-    transcribed text + detected language
-    """
     try:
+        url = "https://api.sarvam.ai/speech-to-text"
+        headers = {
+            "api-subscription-key": settings.sarvam_api_key
+        }
         with open(audio_file_path, "rb") as audio_file:
-
-            params = {
-                "model": "whisper-1",
-                "file":  audio_file,
-                "response_format": "verbose_json",  # gives us language detection too
+            files = {
+                "file": ("audio.wav", audio_file, "audio/wav")
             }
-
-            # if language is known, pass it — improves accuracy
-            if language:
-                params["language"] = LANGUAGE_MAP.get(language.lower(), "hi")
-
-            transcript = client.audio.transcriptions.create(**params)
-
-        detected_language = transcript.language or "en"
-
-        logger.info(f"Transcribed audio | language: {detected_language} | text: {transcript.text[:60]}...")
-
+            data = {
+                "model": "saaras:v3"
+            }
+            response = requests.post(url, headers=headers, files=files, data=data)
+            response.raise_for_status()
+            
+        transcript_data = response.json()
+        transcript = transcript_data.get("transcript", "")
+        detected_language = language or "en"
+        
+        logger.info(f"Transcribed audio (Sarvam) | text: {transcript[:60]}...")
         return {
-            "text":     transcript.text,
+            "text":     transcript,
             "language": detected_language,
             "success":  True
         }
@@ -60,3 +55,4 @@ def transcribe_audio(audio_file_path: str, language: str = None) -> dict:
             "success": False,
             "error":   str(e)
         }
+

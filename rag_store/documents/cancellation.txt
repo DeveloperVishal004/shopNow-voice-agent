@@ -1,0 +1,27 @@
+1. Order Cancellation Window
+- Customers can successfully cancel an order only if the current order status is marked as "Processing" or "Confirmed" in the ShopNow system.
+- Once an order status updates to "Packed", "Dispatched", or "In Transit", the cancellation option is permanently disabled on the app and website. The AI Voice Agent and human support staff also cannot bypass this system lock to cancel a dispatched order.
+2. Post-Dispatch Cancellations (Refusing Delivery)
+If a customer urgently needs to cancel an order that has already been dispatched, they must follow the "Doorstep Rejection" protocol:
+- The customer must wait for the courier executive to attempt delivery and explicitly refuse to accept the package at the doorstep.
+- The courier will then mark the package as RTO (Return to Origin).
+- Prepaid Orders: A full refund (excluding any express shipping charges) will be initiated only after the RTO package arrives back at the ShopNow fulfillment center.
+- COD Orders: The order will be canceled with no financial penalty, but rejecting multiple COD orders will result in a permanent ban on the COD payment method for that account.
+3. Order Modifications (Address and Phone Number)
+- Delivery address details (house number, street, PIN code) and contact phone numbers can only be modified while the order is in the "Processing" stage.
+- To modify these details, the customer must use the "Edit Order" button in the app or ask the support agent to update the database before the dispatch manifest is printed.
+- Once the order is "Packed" or "Dispatched", the courier partner's airway bill (AWB) is finalized, and absolutely no address or phone number changes can be made. Packages cannot be redirected to a different state, city, or local PIN code mid-transit.
+4. Item Modifications (Size, Color, Quantity)
+- ShopNow does not allow modifications to the specific items within an order once the payment is successful.
+- Customers cannot add items, remove items, or change the size/color of an item in an active order.
+- If a customer selected the wrong size or color, they must cancel the entire order (if still in the "Processing" window) and place a brand new order with the correct specifications.
+5. Refunds for Customer-Initiated Cancellations
+- If a customer successfully cancels a prepaid order before dispatch, a full refund for the item value and all shipping charges is initiated immediately.
+- The refunded amount will reflect in the original payment method (Credit Card, UPI, Net Banking) within 3 to 5 business days, depending on the banking partner's processing time.
+6. Auto-Cancellations by ShopNow
+ShopNow reserves the right to automatically cancel customer orders under specific conditions without prior notice. Common reasons include:
+- Inventory Sync Errors: The purchased item is discovered to be out-of-stock during warehouse packing.
+- Unserviceable PIN Codes: The courier network suddenly marks the destination PIN code as unserviceable or restricted.
+- Fraud Detection: The payment gateway flags the transaction as high-risk or suspected fraud.
+- If ShopNow auto-cancels a prepaid order, a 100% refund is initiated instantly to the original payment source.
+

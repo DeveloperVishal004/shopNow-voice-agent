@@ -1,22 +1,19 @@
 import os
 import uuid
-from openai import OpenAI
+import requests
 from loguru import logger
 from backend.config import settings
-
-client = OpenAI(api_key=settings.openai_api_key)
 
 AUDIO_OUTPUT_DIR = "./temp_audio/responses"
 os.makedirs(AUDIO_OUTPUT_DIR, exist_ok=True)
 
-# voice selection based on language
-# nova and shimmer sound most natural for support agent
+# Sarvam language mappings roughly map like this:
 VOICE_MAP = {
-    "en": "nova",
-    "hi": "shimmer",
-    "ta": "shimmer",
-    "te": "shimmer",
-    "bn": "shimmer",
+    "en": "en-IN",
+    "hi": "hi-IN",
+    "ta": "ta-IN",
+    "te": "te-IN",
+    "bn": "bn-IN",
 }
 
 def text_to_speech(text: str, language: str = "en") -> dict:
@@ -24,25 +21,45 @@ def text_to_speech(text: str, language: str = "en") -> dict:
     Takes text + language, returns path to generated audio file
     """
     try:
-        voice = VOICE_MAP.get(language, "nova")
+        url = "https://api.sarvam.ai/text-to-speech/stream"
+        headers = {
+            "api-subscription-key": settings.sarvam_api_key,
+            "Content-Type": "application/json"
+        }
+        
+        target_lang = VOICE_MAP.get(language[:2].lower(), "hi-IN")
+        
+        payload = {
+            "text": text,
+            "target_language_code": target_lang,
+            "speaker": "anushka",
+            "model": "bulbul:v2",
+            "pace": 1,
+            "speech_sample_rate": 24000,
+            "pitch": 0,
+            "loudness": 1.5,
+            # We use linear16 (PCM) rather than wave base64 now
+            "output_audio_codec": "linear16", 
+            "enable_preprocessing": True
+        }
+        
+        # When using linear16 locally to file, we may need a wave file.
+        # But for websocket test this is skipped. This is left here for completeness.
+        # We will stream the bytes directly into the file. Note: This creates raw PCM file, not valid WAV.
+        output_filename = f"{AUDIO_OUTPUT_DIR}/{uuid.uuid4()}.pcm"
+        
+        with requests.post(url, headers=headers, json=payload, stream=True) as response:
+            response.raise_for_status()
+            with open(output_filename, "wb") as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
 
-        response = client.audio.speech.create(
-        model="gpt-4o-mini-tts",
-        voice="alloy",
-        input=text,
-        speed=1.5
-        )
-
-        # save to temp file
-        output_filename = f"{AUDIO_OUTPUT_DIR}/{uuid.uuid4()}.mp3"
-        response.stream_to_file(output_filename)
-
-        logger.info(f"TTS generated | language: {language} | voice: {voice} | text: {text[:60]}...")
-
+        logger.info(f"TTS generated (Sarvam Stream) | language: {language} | text: {text[:60]}...")
         return {
             "audio_path": output_filename,
-            "voice":      voice,
-            "language":   language,
+            "voice":      "anushka",
+            "language":   target_lang,
             "success":    True
         }
 
@@ -55,3 +72,4 @@ def text_to_speech(text: str, language: str = "en") -> dict:
             "success":    False,
             "error":      str(e)
         }
+

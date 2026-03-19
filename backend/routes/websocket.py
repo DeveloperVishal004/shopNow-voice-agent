@@ -75,7 +75,7 @@ async def realtime_call(websocket: WebSocket, call_id: str):
             pass
 
 
-async def send_agent_response(websocket: WebSocket, call_id: str, text: str):
+async def send_agent_response(websocket: WebSocket, call_id: str, text: str, lang_code: str = "hi-IN"):
     add_turn(call_id=call_id, role="agent", text=text)
     
     await websocket.send_text(json.dumps({
@@ -84,22 +84,37 @@ async def send_agent_response(websocket: WebSocket, call_id: str, text: str):
         "text": text
     }))
     
-    logger.info(f"Generating TTS for: {text[:40]}...")
+    logger.info(f"Generating TTS (Streaming) for: {text[:40]}...")
     try:
-        async with aclient.audio.speech.with_streaming_response.create(
-            model="tts-1",
-            voice="shimmer",
-            input=text,
-            response_format="pcm"
-        ) as response:
-            async for chunk in response.iter_bytes(chunk_size=4096):
-                if chunk:
-                    await websocket.send_bytes(chunk)
-                
+        import httpx
+        payload = {
+            "text": text,
+            "target_language_code": lang_code,
+            "speaker": "anushka",
+            "model": "bulbul:v2",
+            "pace": 1,
+            "speech_sample_rate": 24000,
+            "pitch": 0,
+            "loudness": 1.5,
+            "output_audio_codec": "linear16",
+            "enable_preprocessing": True
+        }
+        headers = {
+            "api-subscription-key": settings.sarvam_api_key,
+            "Content-Type": "application/json"
+        }
+        async with httpx.AsyncClient() as client:
+            async with client.stream("POST", "https://api.sarvam.ai/text-to-speech/stream", json=payload, headers=headers, timeout=30.0) as resp:
+                resp.raise_for_status()
+                async for chunk in resp.aiter_bytes(chunk_size=4096):
+                    if chunk:
+                        await websocket.send_bytes(chunk)
+
     except Exception as e:
         logger.error(f"TTS Error: {e}")
 
-async def process_turn(websocket: WebSocket, call_id: str, pcm_bytes: bytes):
+
+async def process_turn(websocket: WebSocket, call_id: str, pcm_bytes: bytes):   
     try:
         wav_io = io.BytesIO()
         try:
@@ -115,14 +130,26 @@ async def process_turn(websocket: WebSocket, call_id: str, pcm_bytes: bytes):
         wav_io.name = "audio.wav"
         wav_io.seek(0)
 
-        logger.info("Sending to STT...")
-        transcript_response = await aclient.audio.transcriptions.create(
-            model="whisper-1",
-            file=wav_io,
-            response_format="verbose_json"
-        )
-        
-        transcript = transcript_response.text.strip()
+        logger.info("Sending to Sarvam STT...")
+        import httpx
+        headers = {
+            "api-subscription-key": settings.sarvam_api_key
+        }
+        wav_io.seek(0)
+        files = {
+            "file": ("audio.wav", wav_io.read(), "audio/wav")
+        }
+        data = {
+            "model": "saaras:v3"
+        }
+        async with httpx.AsyncClient() as client:
+            resp = await client.post("https://api.sarvam.ai/speech-to-text", headers=headers, data=data, files=files, timeout=30.0)
+            if resp.status_code != 200:
+                logger.error(f"Sarvam STT failed: {resp.text}")
+            resp.raise_for_status()
+            stt_data = resp.json()
+            transcript = stt_data.get("transcript", "").strip()
+            detected_lang = stt_data.get("language_code", "hi-IN")
         if not transcript:
             logger.warning("Empty transcript received. Skipping turn.")
             return

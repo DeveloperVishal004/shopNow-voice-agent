@@ -32,6 +32,6 @@ def show():
             "Intent": list(intent_data.keys()),
             "Calls":  list(intent_data.values())
         })
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, width="stretch")
     else:
         st.info("No data yet")

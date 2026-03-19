@@ -552,12 +552,12 @@ connect();
                 if resp.status_code == 200:
                     turns = resp.json().get("turns", [])
                     st.session_state.messages = [
-                        {{
+                        {
                             "role":      t["role"],
                             "text":      t["text"],
                             "intent":    t.get("intent", ""),
                             "sentiment": t.get("sentiment", "")
-                        }}
+                        }
                         for t in turns
                     ]
                     st.rerun()

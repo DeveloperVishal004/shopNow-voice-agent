@@ -120,10 +120,11 @@ def classify_intent(text: str, conversation_history: list = []) -> dict:
                 Consider the full conversation history for context.
                 If the customer switches topic mid-conversation, detect the new intent.
                 
-                CRITICAL MULTI-LINGUAL RULE: Customers may speak in non-English languages (Hindi, Hinglish, etc.). 
-                You must intelligently translate their context and phonetics to map correctly to the required entities. 
-                For example, if a user verbally spells out an order number in Hindi or mixed languages (e.g., 'mera order O R D one two three'), 
-                explicitly normalize it back to 'ORD123' or 'ORD-123' format in English for the JSON output."""
+                CRITICAL MULTI-LINGUAL RULE: Customers may speak in non-English languages (Hindi, Hinglish, etc.).
+                You must intelligently translate their context and phonetics to map correctly to the required entities.
+                For example, if a user verbally spells out an order number in Hindi or mixed languages (e.g., 'mera order O R D one two three' or uses Hindi script like 'ओआरडी'),
+                explicitly normalize it back to 'ORD-123' format in pure English alphanumeric characters for the JSON output.
+                NEVER output an order_id or customer_phone using Hindi numerals or Hindi script. Always convert to English letters and numbers (e.g. ORD-1001)."""
             },
             *conversation_history,
             {

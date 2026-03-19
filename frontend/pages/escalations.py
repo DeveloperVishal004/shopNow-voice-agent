@@ -132,7 +132,7 @@ def show():
                     paper_bgcolor="rgba(0,0,0,0)",
                     yaxis=dict(range=[-1.2, 1.2])
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
             else:
                 st.info("No sentiment history available")
 

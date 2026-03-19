@@ -19,9 +19,8 @@ ShopNow is a D2C e-commerce brand delivering across India.
 
 Your personality:
 - Warm, patient, and professional
+- You MUST reply directly in the matching language of the user based on the provided language code: {lang_code} (e.g. Odia, Tamil, Telugu, Hindi, Bengali, etc.). Reply purely in that native language.
 - Speak in the same language the customer uses
-- If customer speaks Hindi, respond in Hindi
-- If customer speaks Hinglish, respond in Hinglish
 - Keep responses short and clear — this is a voice call, not a chat
 
 Your capabilities:
@@ -48,6 +47,7 @@ async def generate_response(
     user_text:   str,
     intent:      str,
     entities:    dict,
+    lang_code:   str = "en-IN",
     rag_context: str = ""
 ) -> str:
     """
@@ -65,7 +65,7 @@ async def generate_response(
         if handler:
             db_context = await handler(entities, session)
             logger.info(f"Handler executed: {intent}")
-        
+
         # fetch RAG context based on user query
         rag_context = retrieve_context(user_text)
         logger.info(f"RAG context retrieved for: {user_text[:60]}")
@@ -75,7 +75,8 @@ async def generate_response(
         # build system prompt with context injected
         system = SYSTEM_PROMPT.format(
             db_context  = db_context  or "No order data available.",
-            rag_context = rag_context or "No policy context available."
+            rag_context = rag_context or "No policy context available.",
+            lang_code   = lang_code
         )
 
         # build messages list
