@@ -14,7 +14,7 @@
 [![FAISS](https://img.shields.io/badge/FAISS-RAG-00BFFF?style=flat-square)](https://faiss.ai)
 [![License](https://img.shields.io/badge/License-MIT-brightgreen?style=flat-square)](LICENSE)
 
-*GC Open Soft · IIT Kharagpur · 2026*
+
 
 [**Features**](#-features) · [**Architecture**](#-architecture) · [**Setup**](#-setup) · [**Demo**](#-demo) · [**API**](#-api-endpoints) · [**Dashboard**](#-dashboard)
 
