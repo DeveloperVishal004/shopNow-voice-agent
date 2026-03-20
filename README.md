@@ -506,9 +506,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-**Built with ❤️ for GC Open Soft · IIT Kharagpur · 2026**
-
-*Problem Statement by The AI Way in collaboration with GC Open Soft, IIT Kharagpur*
+**Built with ❤️**
 
 ⭐ Star this repo if you found it useful!
 
