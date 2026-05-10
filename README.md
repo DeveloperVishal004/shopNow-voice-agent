@@ -8,7 +8,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square&logo=python)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com)
-[![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?style=flat-square&logo=streamlit)](https://streamlit.io)
+[![HTML/JS](https://img.shields.io/badge/HTML%2FJS-Frontend-E34F26?style=flat-square&logo=html5)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-412991?style=flat-square&logo=openai)](https://openai.com)
 [![Sarvam AI](https://img.shields.io/badge/Sarvam_AI-STT+TTS-FF6B35?style=flat-square)](https://sarvam.ai)
 [![FAISS](https://img.shields.io/badge/FAISS-RAG-00BFFF?style=flat-square)](https://faiss.ai)
@@ -66,7 +66,7 @@ A real-time voice system that listens, understands context across multiple turns
 | 📚 **RAG Knowledge Base** | LangChain + FAISS over 5 policy documents — grounded, not hallucinated |
 | 😤 **Hybrid Sentiment** | Text (GPT-4o-mini) + Voice tone (librosa acoustic features) combined |
 | 🚨 **Smart Escalation** | Multi-signal escalation engine with structured human handoff brief |
-| 📊 **Live Dashboard** | Streamlit ops dashboard — FCR, escalations, sentiment trends, intent breakdown |
+| 📊 **Live Dashboard** | HTML/JS dashboard — FCR, escalations, sentiment trends, intent breakdown |
 | 📝 **Call Summaries** | LLM-generated call summaries logged after every session |
 
 ---
@@ -137,7 +137,7 @@ Customer hears Priya
 | **Text Sentiment** | GPT-4o-mini | Utterance-level sentiment scoring |
 | **Vector Store** | FAISS (CPU) | Policy document semantic retrieval |
 | **Database** | SQLite + SQLAlchemy async | Orders, call logs, escalation records |
-| **Frontend** | Streamlit + Plotly | Live dashboard + voice call interface |
+| **Frontend** | Plain HTML, CSS, JavaScript | Live dashboard + voice call interface |
 | **Voice UI** | Embedded HTML/JS | Real-time browser mic + audio playback |
 | **Session** | Python in-memory dict | Per-call multi-turn conversation state |
 | **Logging** | Loguru | Structured application logging |
@@ -183,7 +183,7 @@ shopNow-voice-agent/
 │   └── utils/                      # Utility helpers
 │
 ├── frontend/
-│   ├── app.py                      # Streamlit entry point + navigation
+│   └── index.html                  # HTML entry point + navigation
 │   ├── index.html                  # Embedded HTML/JS voice call UI
 │   └── pages/
 │       ├── dashboard.py            # Live ops dashboard
@@ -279,12 +279,8 @@ python scripts/build_rag.py
 uvicorn backend.main:app --reload
 ```
 
-**Terminal 2 — Frontend:**
-```bash
-streamlit run frontend/app.py
-```
-
-Open **http://localhost:8501** in your browser.
+**Frontend:**
+Double click and open `frontend/index.html` in your browser.
 
 > 📖 Interactive API docs at **http://localhost:8000/docs**
 
@@ -345,7 +341,7 @@ POST /call/turn
 
 ## 📊 Dashboard
 
-The Streamlit dashboard at `http://localhost:8501` has 4 pages:
+The HTML dashboard can be accessed by opening `frontend/index.html` in your browser. It includes:
 
 ### Live Dashboard
 - Total calls handled

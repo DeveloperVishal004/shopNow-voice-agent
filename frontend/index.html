@@ -1169,6 +1169,7 @@ function closeCall() {
   document.getElementById('noTranscript').classList.remove('hidden');
 
   document.getElementById('logBox').innerHTML = '';
+  resetCallBtn();
   fetchDailyReport();
 }
 
