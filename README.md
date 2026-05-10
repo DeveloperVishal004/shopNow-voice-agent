@@ -21,7 +21,7 @@
 </div>
 
 ---
-Video :-  https://youtu.be/OGlhhSh1Ltw
+Video :-  [https://youtu.be/LwRGCmb9hB4](https://youtu.be/LwRGCmb9hB4)
 ## 🎯 The Problem
 
 ShopNow is a D2C brand processing **40,000+ orders/month** across India with 35 human agents available only **9 AM–9 PM**.
