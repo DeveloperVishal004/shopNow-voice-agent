@@ -34,6 +34,26 @@ def check_escalation(session: dict) -> dict:
                 reason="Customer explicitly requested a human agent"
             )
 
+    # ── Rule: required data could not be found ───────────
+    # These two rules run regardless of sentiment-history length, so a
+    # customer who is stuck on a bad order ID still gets handed off.
+    data_not_found_streak = session.get("data_not_found_streak", 0)
+    if data_not_found_streak >= settings.escalation_data_not_found_limit:
+        logger.info(f"Escalation triggered: data not found x{data_not_found_streak} | call: {session['call_id']}")
+        return build_escalation_response(
+            session,
+            reason=f"Required order data could not be located after {data_not_found_streak} attempts"
+        )
+
+    # ── Rule: conversation dragging on unresolved ────────
+    customer_turn_count = sum(1 for t in turns if t["role"] == "customer")
+    if customer_turn_count >= settings.escalation_max_turns:
+        logger.info(f"Escalation triggered: long conversation ({customer_turn_count} turns) | call: {session['call_id']}")
+        return build_escalation_response(
+            session,
+            reason=f"Conversation reached {customer_turn_count} turns without resolution"
+        )
+
     if len(sentiment_history) < settings.escalation_min_turns:
         return {
             "should_escalate": False,

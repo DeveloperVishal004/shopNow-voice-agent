@@ -64,7 +64,7 @@ A real-time voice system that listens, understands context across multiple turns
 | 🧠 **5-Intent NLU** | OpenAI function calling classifies intent + extracts entities in one API call |
 | 💾 **Multi-Turn Memory** | In-memory session tracks full conversation, intent, sentiment, order context |
 | 📚 **RAG Knowledge Base** | LangChain + FAISS over 5 policy documents — grounded, not hallucinated |
-| 😤 **Hybrid Sentiment** | Text (GPT-4o-mini) + Voice tone (librosa acoustic features) combined |
+| 😤 **Sentiment-Aware** | Utterance-level sentiment (GPT-4o-mini) adapts Priya's tone and drives escalation |
 | 🚨 **Smart Escalation** | Multi-signal escalation engine with structured human handoff brief |
 | 📊 **Live Dashboard** | HTML/JS dashboard — FCR, escalations, sentiment trends, intent breakdown |
 | 📝 **Call Summaries** | LLM-generated call summaries logged after every session |
@@ -100,8 +100,8 @@ Customer Browser
 │            └──────────┬─────────────┘        │
 │                       ▼                      │
 │        ┌──────────────────────────────┐      │
-│        │   Hybrid Sentiment Analysis  │      │
-│        │  Text (GPT) + Voice (librosa)│      │
+│        │  Utterance Sentiment (GPT-4o) │      │
+│        │   drives tone + escalation    │      │
 │        └──────────────┬───────────────┘      │
 │                       │                      │
 │             ┌─────────┴──────────┐           │
@@ -133,8 +133,7 @@ Customer hears Priya
 | **TTS** | Sarvam AI Bulbul v2 | Natural Indian voice synthesis |
 | **LLM** | OpenAI GPT-4o-mini | Intent classification + response generation |
 | **Embeddings** | OpenAI text-embedding-3-small | Document vectorization for RAG |
-| **Voice Sentiment** | librosa | Acoustic emotion detection |
-| **Text Sentiment** | GPT-4o-mini | Utterance-level sentiment scoring |
+| **Sentiment** | GPT-4o-mini | Utterance-level sentiment scoring — tone adaptation + escalation |
 | **Vector Store** | FAISS (CPU) | Policy document semantic retrieval |
 | **Database** | SQLite + SQLAlchemy async | Orders, call logs, escalation records |
 | **Frontend** | Plain HTML, CSS, JavaScript | Live dashboard + voice call interface |
@@ -164,10 +163,8 @@ shopNow-voice-agent/
 │   │   ├── intent.py               # OpenAI function calling classifier
 │   │   ├── llm.py                  # LangChain conversation chain
 │   │   ├── rag.py                  # FAISS retrieval logic
-│   │   ├── sentiment.py            # Text sentiment (GPT-4o-mini)
-│   │   ├── voice_sentiment.py      # Voice sentiment (librosa)
-│   │   ├── sentiment_detection.py  # Hybrid fusion logic
-│   │   └── escalation.py          # Multi-signal escalation engine
+│   │   ├── sentiment.py            # Utterance sentiment (GPT-4o-mini)
+│   │   └── escalation.py           # Multi-signal escalation engine
 │   ├── handlers/
 │   │   ├── order_status.py         # Order status DB handler
 │   │   ├── returns.py              # Return/refund DB handler
@@ -183,13 +180,8 @@ shopNow-voice-agent/
 │   └── utils/                      # Utility helpers
 │
 ├── frontend/
-│   └── index.html                  # HTML entry point + navigation
-│   ├── index.html                  # Embedded HTML/JS voice call UI
-│   └── pages/
-│       ├── dashboard.py            # Live ops dashboard
-│       ├── escalations.py          # Escalation brief viewer
-│       ├── report.py               # Daily ops report
-│       └── test_agent.py           # Real-time voice call interface
+│   └── index.html                  # Single-page HTML/CSS/JS console —
+│                                   #   call UI + dashboard, escalations & report views
 │
 ├── rag_store/
 │   ├── documents/
@@ -260,6 +252,8 @@ TTS_VOICE=nova
 ESCALATION_NEGATIVE_TURNS=4
 ESCALATION_SENTIMENT_THRESHOLD=-0.7
 ESCALATION_MIN_TURNS=3
+ESCALATION_MAX_TURNS=8
+ESCALATION_DATA_NOT_FOUND_LIMIT=2
 ```
 
 ### Step 5 — Seed the database
@@ -379,13 +373,18 @@ The escalation engine evaluates multiple signals every turn:
 Rule 1: Explicit human request    → immediate escalation
         "manager", "agent", "human", "manav bulao"
 
-Rule 2: Consecutive negative      → N consecutive negative/angry turns
-        turns                       (configured via ESCALATION_NEGATIVE_TURNS)
+Rule 2: Data not found            → order lookup fails
+        (repeated)                  ESCALATION_DATA_NOT_FOUND_LIMIT times (default 2)
+                                    — a successful lookup resets the counter
 
-Rule 3: Sentiment threshold       → avg score ≤ ESCALATION_SENTIMENT_THRESHOLD
+Rule 3: Long conversation         → ESCALATION_MAX_TURNS customer turns
+                                    without resolution (default 8)
+
+Rule 4: Consecutive negative      → ≥ 70% of the last ESCALATION_NEGATIVE_TURNS
+        sentiment                   turns are negative/angry (default 4)
+
+Rule 5: Sentiment threshold       → avg score ≤ ESCALATION_SENTIMENT_THRESHOLD
                                     evaluated after ESCALATION_MIN_TURNS
-
-Rule 4: Unresolved call length    → 8+ customer turns without resolution
 ```
 
 **Handoff brief includes:**
@@ -400,34 +399,25 @@ Rule 4: Unresolved call length    → 8+ customer turns without resolution
 
 ---
 
-## 🧬 Hybrid Sentiment Detection
+## 🧬 Sentiment-Aware Responses
 
-Standard text sentiment misses frustrated customers who use polite words with an angry tone.
+Every customer utterance is scored for sentiment, and that signal is used twice — to shape Priya's tone and to feed the escalation engine.
 
 ```
 Every utterance
       │
       ▼
- Text Sentiment (GPT-4o-mini)
+ Sentiment (GPT-4o-mini)
+ positive / neutral / negative / angry
       │
- ┌────┴────┐
- │         │
-Non-neutral  Neutral
- │         │
- │         ▼
- │   Voice Sentiment (librosa)
- │   - RMS Energy     (loudness)
- │   - ZCR            (vocal tension)
- │   - Pitch Variance (emotional stability)
- │   - Tempo          (speaking rate)
- │         │
- └────┬────┘
-      ▼
- Final Sentiment
- (positive / neutral / negative / angry)
+ ┌────┴──────────────┐
+ ▼                   ▼
+ Tone adaptation     Escalation engine
+ empathetic reply    consecutive-negative
+ when negative       & average-sentiment rules
 ```
 
-Voice analysis only runs when text is neutral — optimizing latency while catching tone-based frustration.
+The sentiment label is injected into the response prompt as a tone directive, so an angry customer gets an apology-first, extra-empathetic reply — while the running sentiment history decides when the call is handed to a human.
 
 ---
 

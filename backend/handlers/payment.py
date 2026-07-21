@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from backend.db.database import AsyncSessionLocal
 from backend.db.models import Order
+from backend.memory.session import record_data_lookup
 from loguru import logger
 
 
@@ -28,7 +29,10 @@ async def handle_payment_issue(entities: dict, session: dict) -> str:
             order = result.scalar_one_or_none()
 
             if not order:
+                record_data_lookup(session, found=False)
                 return f"I could not find order {order_id}. Please verify your order ID."
+
+            record_data_lookup(session, found=True)
 
             context = f"""
 Payment issue details:

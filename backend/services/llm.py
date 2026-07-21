@@ -37,10 +37,21 @@ Rules:
 - Be empathetic when the customer is frustrated
 - Never say you are an AI unless directly asked
 
+Emotional guidance for THIS reply (based on the customer's current sentiment):
+{tone_directive}
+
 Context provided to you:
 {db_context}
 {rag_context}
 """
+
+# tone instructions injected based on the sentiment of the current utterance
+TONE_DIRECTIVES = {
+    "angry":    "The customer is ANGRY. Before anything else, sincerely apologise and acknowledge their frustration. Stay calm, extra warm, and lead with a concrete reassurance that you will fix this.",
+    "negative": "The customer sounds unhappy or dissatisfied. Open with empathy, acknowledge the inconvenience, and reassure them you are here to help.",
+    "neutral":  "Maintain a warm, professional, and helpful tone.",
+    "positive": "The customer is in a good mood. Keep the tone friendly, upbeat, and appreciative.",
+}
 
 async def generate_response(
     call_id:     str,
@@ -48,7 +59,8 @@ async def generate_response(
     intent:      str,
     entities:    dict,
     lang_code:   str = "en-IN",
-    rag_context: str = ""
+    rag_context: str = "",
+    sentiment:   str = "neutral"
 ) -> str:
     """
     Core function — takes user input, fetches DB context,
@@ -72,11 +84,15 @@ async def generate_response(
         # get full conversation history for multi-turn context
         history = get_conversation_history(call_id)
 
+        # pick tone guidance based on the customer's current sentiment
+        tone_directive = TONE_DIRECTIVES.get(sentiment, TONE_DIRECTIVES["neutral"])
+
         # build system prompt with context injected
         system = SYSTEM_PROMPT.format(
-            db_context  = db_context  or "No order data available.",
-            rag_context = rag_context or "No policy context available.",
-            lang_code   = lang_code
+            db_context     = db_context  or "No order data available.",
+            rag_context    = rag_context or "No policy context available.",
+            lang_code      = lang_code,
+            tone_directive = tone_directive
         )
 
         # build messages list
