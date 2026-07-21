@@ -200,14 +200,30 @@ async def process_turn(websocket: WebSocket, call_id: str, pcm_bytes: bytes):
                 asyncio.create_task(save_call_to_folder(call_id, session_data))
             return
 
-        # Use the generate_response from llm.py
+        # Use the generate_response from llm.py (tone adapts to sentiment)
         response_text = await generate_response(
             call_id=call_id,
             user_text=transcript,
             intent=intent,
-            entities=entities
+            entities=entities,
+            sentiment=sentiment["label"]
         )
-        
+
+        # Re-check escalation after the data lookup ran, so the
+        # "Data Not Found" rule can hand off the same turn it fails.
+        session = get_session(call_id)
+        escalation = check_escalation(session)
+        if escalation["should_escalate"]:
+            await websocket.send_text(json.dumps({
+                "type": "escalation",
+                "message": escalation["message"],
+                "escalation_brief": escalation["brief"]
+            }))
+            session_data = end_session(call_id, "escalated")
+            if session_data:
+                asyncio.create_task(save_call_to_folder(call_id, session_data))
+            return
+
         await send_agent_response(websocket, call_id, response_text)
 
     except Exception as e:

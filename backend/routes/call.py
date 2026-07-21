@@ -101,13 +101,33 @@ async def handle_turn(request: TurnRequest):
             "escalation_brief": escalation["brief"]
         }
 
-    # 7 — generate LLM response
+    # 7 — generate LLM response (tone adapts to the current sentiment)
     response_text = await generate_response(
         call_id  = request.call_id,
         user_text= request.text,
         intent   = intent,
-        entities = entities
+        entities = entities,
+        sentiment= sentiment["label"]
     )
+
+    # 7b — re-check escalation now that the data lookup has run.
+    # This lets the "Data Not Found" rule fire the same turn a lookup fails.
+    session = get_session(request.call_id)
+    escalation = check_escalation(session)
+    if escalation["should_escalate"]:
+        add_turn(
+            call_id = request.call_id,
+            role    = "agent",
+            text    = escalation["message"]
+        )
+        end_session(request.call_id, outcome="escalated")
+        return {
+            "response":        escalation["message"],
+            "intent":          intent,
+            "sentiment":       sentiment["label"],
+            "escalated":       True,
+            "escalation_brief": escalation["brief"]
+        }
 
     # 8 — add agent turn to session
     add_turn(

@@ -26,6 +26,7 @@ def create_session(customer_phone: str = None) -> dict:
         "escalated":         False,
         "resolved":          False,
         "order_context":     None,        # DB result stored here after lookup
+        "data_not_found_streak": 0,       # consecutive failed backend data lookups
     }
 
     sessions[call_id] = session
@@ -87,6 +88,22 @@ def add_turn(call_id: str, role: str, text: str, intent: str = None, sentiment: 
         session["sentiment_history"].append(sentiment)
 
     logger.info(f"Turn added | call: {call_id} | role: {role} | intent: {intent} | sentiment: {sentiment}")
+
+
+def record_data_lookup(session: dict, found: bool):
+    """
+    Tracks consecutive failed backend data lookups.
+    Resets to 0 on a successful lookup, increments on a miss.
+    Feeds the "Data Not Found" escalation criterion so the agent
+    hands off when it repeatedly cannot locate the customer's order.
+    """
+    if not session:
+        return
+    if found:
+        session["data_not_found_streak"] = 0
+    else:
+        session["data_not_found_streak"] = session.get("data_not_found_streak", 0) + 1
+        logger.info(f"Data lookup miss | streak: {session['data_not_found_streak']}")
 
 
 def get_conversation_history(call_id: str) -> list:

@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     escalation_negative_turns: int = 4
     escalation_sentiment_threshold: float = -0.2
     escalation_min_turns: int = 3
+    escalation_max_turns: int = 8               # escalate if a call runs this many customer turns unresolved
+    escalation_data_not_found_limit: int = 2    # escalate after this many failed backend data lookups
 
 
     class Config:

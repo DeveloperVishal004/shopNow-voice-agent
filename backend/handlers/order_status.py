@@ -2,6 +2,7 @@ import json
 from sqlalchemy import select, text
 from backend.db.database import AsyncSessionLocal
 from backend.db.models import Order
+from backend.memory.session import record_data_lookup
 from loguru import logger
 
 
@@ -42,9 +43,11 @@ async def handle_order_status(entities: dict, session: dict) -> str:
                 return "I could not find your order. Could you please share your order ID?"
 
             if not order:
+                record_data_lookup(session, found=False)
                 return f"I could not find any order with ID {order_id}. Please check and try again."
 
             # store in session for later turns
+            record_data_lookup(session, found=True)
             session["order_context"] = {
                 "id":             order.id,
                 "status":         order.status,
