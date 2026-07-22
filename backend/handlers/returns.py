@@ -1,53 +1,34 @@
-from sqlalchemy import select
-from backend.db.database import AsyncSessionLocal
-from backend.db.models import Order
-from backend.memory.session import record_data_lookup, cache_order_context
+from backend.handlers.resolve import resolve_order
 from loguru import logger
 
 
 async def handle_return_refund(entities: dict, session: dict) -> str:
-    order_id = entities.get("order_id") or (
-        session.get("order_context") or {}
-    ).get("id")
-    reason   = entities.get("reason", "not specified")
-
-    if not order_id:
-        return "Could you please share your order ID so I can check return eligibility?"
+    reason = entities.get("reason", "not specified")
 
     try:
-        async with AsyncSessionLocal() as db:
-            clean_order_id = str(order_id).replace(" ", "").upper()
-            if not clean_order_id.startswith("ORD-") and clean_order_id.startswith("ORD"):
-                clean_order_id = clean_order_id.replace("ORD", "ORD-")
+        order, order_id = await resolve_order(entities, session)
+    except Exception as e:
+        logger.error(f"Return handler failed: {e}")
+        return "I am having trouble checking return eligibility. Please try again."
 
-            result = await db.execute(
-                select(Order).where(
-                    (Order.id == order_id) |
-                    (Order.id == clean_order_id)
-                )
-            )
-            order = result.scalar_one_or_none()
+    if not order:
+        if order_id:
+            return f"I could not find order {order_id}. Please verify your order ID."
+        return "Could you please share your order ID so I can check return eligibility?"
 
-            if not order:
-                record_data_lookup(session, found=False)
-                return f"I could not find order {order_id}. Please verify your order ID."
-
-            record_data_lookup(session, found=True)
-            cache_order_context(session, order)
-
-            if order.return_eligible == "no":
-                return f"""
+    if order.return_eligible == "no":
+        return f"""
 Order {order.id} ({order.item_name}) is not eligible for return.
 This could be because it has not been delivered yet or the return window has passed.
 """
 
-            if order.refund_status == "processed":
-                return f"Your refund for order {order.id} has already been processed."
+    if order.refund_status == "processed":
+        return f"Your refund for order {order.id} has already been processed."
 
-            if order.refund_status == "initiated":
-                return f"A return for order {order.id} is already in progress."
+    if order.refund_status == "initiated":
+        return f"A return for order {order.id} is already in progress."
 
-            context = f"""
+    context = f"""
 Return eligibility check:
 - Order ID      : {order.id}
 - Item          : {order.item_name}
@@ -58,9 +39,5 @@ Return eligibility check:
 - Units         : {order.units_purchased}
 The return can be initiated for this order.
 """
-            logger.info(f"Return eligible: {order.id}")
-            return context
-
-    except Exception as e:
-        logger.error(f"Return handler failed: {e}")
-        return "I am having trouble checking return eligibility. Please try again."
+    logger.info(f"Return eligible: {order.id}")
+    return context
