@@ -1,57 +1,24 @@
-import json
-from sqlalchemy import select, text
-from backend.db.database import AsyncSessionLocal
-from backend.db.models import Order
-from backend.memory.session import record_data_lookup, cache_order_context
+from backend.handlers.resolve import resolve_order
 from loguru import logger
 
 
 async def handle_order_status(entities: dict, session: dict) -> str:
     """
-    Looks up order status from DB.
+    Looks up order status from DB via the shared resolver.
     Returns a natural language string the LLM will use to respond.
     """
-    order_id      = entities.get("order_id")
-    customer_phone = session.get("customer_phone")
-
     try:
-        async with AsyncSessionLocal() as db:
+        order, order_id = await resolve_order(entities, session)
+    except Exception as e:
+        logger.error(f"Order status handler failed: {e}")
+        return "I am having trouble fetching your order details right now. Please try again."
 
-            # try by order ID first
-            if order_id:
-                # remove spaces and format to match ORD-XXXX if needed
-                clean_order_id = str(order_id).replace(" ", "").upper()
-                if not clean_order_id.startswith("ORD-") and clean_order_id.startswith("ORD"):
-                    clean_order_id = clean_order_id.replace("ORD", "ORD-")
-                
-                result = await db.execute(
-                    select(Order).where(
-                        (Order.id == order_id) | 
-                        (Order.id == clean_order_id)
-                    )
-                )
-                order = result.scalar_one_or_none()
+    if not order:
+        if order_id:
+            return f"I could not find any order with ID {order_id}. Please check and try again."
+        return "I could not find your order. Could you please share your order ID?"
 
-            # fallback — look up by phone number
-            elif customer_phone:
-                result = await db.execute(
-                    select(Order).where(Order.customer_phone == customer_phone)
-                )
-                order = result.scalars().first()
-
-            else:
-                return "I could not find your order. Could you please share your order ID?"
-
-            if not order:
-                record_data_lookup(session, found=False)
-                return f"I could not find any order with ID {order_id}. Please check and try again."
-
-            # store in session for later turns (reusable by other handlers too)
-            record_data_lookup(session, found=True)
-            cache_order_context(session, order)
-
-            # build context string for LLM
-            context = f"""
+    context = f"""
 Order found:
 - Order ID     : {order.id}
 - Item         : {order.item_name}
@@ -67,9 +34,5 @@ Order found:
 - Payment Mode : {order.payment_mode}
 - Refund Stat  : {order.refund_status}
 """
-            logger.info(f"Order found: {order.id} | status: {order.status}")
-            return context
-
-    except Exception as e:
-        logger.error(f"Order status handler failed: {e}")
-        return "I am having trouble fetching your order details right now. Please try again."
+    logger.info(f"Order found: {order.id} | status: {order.status}")
+    return context
