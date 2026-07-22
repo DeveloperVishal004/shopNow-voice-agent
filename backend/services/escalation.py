@@ -55,16 +55,25 @@ def check_escalation(session: dict) -> dict:
         )
 
     # ── Rule: repeated unclassified queries ──────────────
-    # A customer whose requests keep failing to match any of the 5
-    # known intents gets handed off instead of looping indefinitely
-    # with only generic clarifying replies.
+    # A customer whose requests keep failing to match any of the 6
+    # known intents (5 support intents + general_or_unrelated) gets
+    # handed off — but only if they also seem genuinely frustrated.
+    # Small talk / testing / joking (which now classifies as
+    # general_or_unrelated, not "unknown") never reaches this rule at
+    # all. A calm customer stuck on a truly ambiguous "unknown" query
+    # is held off here rather than escalated, so we don't waste a
+    # human agent's time on what may just be an odd, low-stakes phrasing.
     unknown_intent_streak = session.get("unknown_intent_streak", 0)
     if unknown_intent_streak >= settings.escalation_unknown_intent_limit:
-        logger.info(f"Escalation triggered: unclassified intent x{unknown_intent_streak} | call: {session['call_id']}")
-        return build_escalation_response(
-            session,
-            reason=f"Could not understand the customer's request after {unknown_intent_streak} attempts"
-        )
+        recent_window = sentiment_history[-unknown_intent_streak:] if sentiment_history else []
+        if any(s in ["negative", "angry"] for s in recent_window):
+            logger.info(f"Escalation triggered: unclassified intent x{unknown_intent_streak} with frustration | call: {session['call_id']}")
+            return build_escalation_response(
+                session,
+                reason=f"Could not understand the customer's request after {unknown_intent_streak} attempts, and the customer appears frustrated"
+            )
+        else:
+            logger.info(f"Unclassified intent x{unknown_intent_streak} but sentiment calm — holding off escalation | call: {session['call_id']}")
 
     if len(sentiment_history) < settings.escalation_min_turns:
         return {

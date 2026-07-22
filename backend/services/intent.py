@@ -100,6 +100,15 @@ INTENT_FUNCTIONS = [
             },
             "required": []
         }
+    },
+    {
+        "name": "general_or_unrelated",
+        "description": "Customer is making small talk, joking, testing the system, greeting without a specific request, or asking something unrelated to ShopNow orders, returns, payments, delivery, or products.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
     }
 ]
 
