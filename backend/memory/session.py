@@ -27,6 +27,7 @@ def create_session(customer_phone: str = None) -> dict:
         "resolved":          False,
         "order_context":     None,        # DB result stored here after lookup
         "data_not_found_streak": 0,       # consecutive failed backend data lookups
+        "unknown_intent_streak": 0,       # consecutive turns the classifier couldn't match
     }
 
     sessions[call_id] = session
@@ -104,6 +105,23 @@ def record_data_lookup(session: dict, found: bool):
     else:
         session["data_not_found_streak"] = session.get("data_not_found_streak", 0) + 1
         logger.info(f"Data lookup miss | streak: {session['data_not_found_streak']}")
+
+
+def record_intent_classification(session: dict, intent: str):
+    """
+    Tracks consecutive turns where the intent classifier couldn't match
+    any of the 5 known intents ("unknown"). Resets on any successful
+    match. Feeds the "Unclassified Intent" escalation criterion so a
+    customer whose requests keep failing to route gets handed off
+    instead of looping indefinitely.
+    """
+    if not session:
+        return
+    if intent == "unknown":
+        session["unknown_intent_streak"] = session.get("unknown_intent_streak", 0) + 1
+        logger.info(f"Unclassified intent | streak: {session['unknown_intent_streak']}")
+    else:
+        session["unknown_intent_streak"] = 0
 
 
 def get_conversation_history(call_id: str) -> list:
