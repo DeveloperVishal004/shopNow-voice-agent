@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from backend.db.database import AsyncSessionLocal
 from backend.db.models import Order
+from backend.memory.session import cache_order_context
 from loguru import logger
 
 async def handle_product_query(entities: dict, session: dict) -> str:
@@ -23,6 +24,7 @@ async def handle_product_query(entities: dict, session: dict) -> str:
             order = result.scalar_one_or_none()
 
             if order:
+                cache_order_context(session, order)
                 added_context = f"""Order context retrieved to assist with product specifics:\n- Order ID      : {order.id}\n- Item          : {order.item_name}\n- Current status: {order.status}\n- Order date    : {order.order_date}\n- Delivery date : {order.delivery_date or "Not yet delivered"}\n- Price         : {order.price}\n- Units         : {order.units_purchased}\n- Total Cost    : {order.total_cost}\n- Seller        : {order.seller}\n- Payment Stat  : {order.payment_status}\n- Payment Mode  : {order.payment_mode}\n- Refund Stat   : {order.refund_status}"""
                 return base_context + "\n" + added_context
     except Exception as e:

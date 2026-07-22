@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from backend.db.database import AsyncSessionLocal
 from backend.db.models import Order
-from backend.memory.session import record_data_lookup
+from backend.memory.session import record_data_lookup, cache_order_context
 from loguru import logger
 
 
@@ -33,6 +33,7 @@ async def handle_delivery_complaint(entities: dict, session: dict) -> str:
                 return f"I could not find order {order_id}. Please verify your order ID."
 
             record_data_lookup(session, found=True)
+            cache_order_context(session, order)
 
             context = f"""
 Delivery complaint details:

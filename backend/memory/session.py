@@ -106,6 +106,34 @@ def record_data_lookup(session: dict, found: bool):
         logger.info(f"Data lookup miss | streak: {session['data_not_found_streak']}")
 
 
+def cache_order_context(session: dict, order):
+    """
+    Caches a resolved Order onto the session so ANY handler that looks
+    one up — not just handle_order_status — makes it reusable by later
+    turns via the `entities.get("order_id") or session["order_context"]["id"]`
+    fallback pattern already used across returns/payment/delivery/product.
+
+    Without this, only order_status wrote to order_context, so a call
+    that started with e.g. "I want to return ORD-1001" (return_refund
+    resolves the order but never cached it) would have an empty
+    order_context for a later delivery/payment question in the same
+    call, forcing the classifier to re-extract the order_id from
+    scratch instead of reusing what was already found.
+    """
+    if not session or not order:
+        return
+    session["order_context"] = {
+        "id":              order.id,
+        "status":          order.status,
+        "item_name":       order.item_name,
+        "order_date":      order.order_date,
+        "delivery_date":   order.delivery_date,
+        "return_eligible": order.return_eligible,
+    }
+    if not session.get("customer_name"):
+        session["customer_name"] = order.customer_name
+
+
 def get_conversation_history(call_id: str) -> list:
     """
     Returns turns formatted for LangChain / OpenAI messages list.
