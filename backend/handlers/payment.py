@@ -1,4 +1,4 @@
-from backend.handlers.resolve import resolve_order
+from backend.handlers.resolve import resolve_identity
 from loguru import logger
 
 
@@ -6,16 +6,15 @@ async def handle_payment_issue(entities: dict, session: dict) -> str:
     issue_type = entities.get("issue_type", "not specified")
 
     try:
-        order, order_id = await resolve_order(entities, session)
+        status, result = await resolve_identity(entities, session)
     except Exception as e:
         logger.error(f"Payment handler failed: {e}")
         return "I am having trouble fetching payment details. Please try again."
 
-    if not order:
-        if order_id:
-            return f"I could not find order {order_id}. Please verify your order ID."
-        return "Could you please share your order ID so I can look into the payment issue?"
+    if status == "ask":
+        return result
 
+    order = result
     context = f"""
 Payment issue details:
 - Order ID      : {order.id}

@@ -20,6 +20,10 @@ INTENT_FUNCTIONS = [
                 "customer_phone": {
                     "type": "string",
                     "description": "Customer phone number if mentioned"
+                },
+                "product_name": {
+                    "type": "string",
+                    "description": "Product name the customer mentions, e.g. when identifying which order they mean"
                 }
             },
             "required": []
@@ -38,6 +42,14 @@ INTENT_FUNCTIONS = [
         "reason": {
             "type": "string",
             "description": "Reason for return such as damaged product, wrong item, size issue, not needed, or defective"
+        },
+        "customer_phone": {
+            "type": "string",
+            "description": "Phone number the customer used to place the order, if they provide it (normalize to English digits)"
+        },
+        "product_name": {
+            "type": "string",
+            "description": "Product name the customer mentions, e.g. when identifying which order they mean"
         }
         },
         "required": []
@@ -56,6 +68,14 @@ INTENT_FUNCTIONS = [
                 "issue_type": {
                     "type": "string",
                     "description": "Type of payment issue e.g. double charge, failed payment, missing refund"
+                },
+                "customer_phone": {
+                    "type": "string",
+                    "description": "Phone number the customer used to place the order, if they provide it (normalize to English digits)"
+                },
+                "product_name": {
+                    "type": "string",
+                    "description": "Product name the customer mentions, e.g. when identifying which order they mean"
                 }
             },
             "required": []
@@ -74,6 +94,14 @@ INTENT_FUNCTIONS = [
                 "complaint_type": {
                     "type": "string",
                     "description": "Type of complaint e.g. late delivery, wrong address, damaged"
+                },
+                "customer_phone": {
+                    "type": "string",
+                    "description": "Phone number the customer used to place the order, if they provide it (normalize to English digits)"
+                },
+                "product_name": {
+                    "type": "string",
+                    "description": "Product name the customer mentions, e.g. when identifying which order they mean"
                 }
             },
             "required": []

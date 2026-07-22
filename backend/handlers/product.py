@@ -1,4 +1,4 @@
-from backend.handlers.resolve import resolve_order
+from backend.handlers.resolve import resolve_order, resolve_identity
 from loguru import logger
 
 
@@ -8,10 +8,19 @@ async def handle_product_query(entities: dict, session: dict) -> str:
 
     base_context = f"""Product query received:\n- Product : {product_name}\n- Query   : {query_type}\nUse knowledge to answer. If unsure, tell the customer you will check."""
 
-    # Order lookup here is best-effort enrichment (product answers can come from
-    # the knowledge base alone), so a miss must NOT count toward escalation.
     try:
-        order, _ = await resolve_order(entities, session, record_miss=False)
+        # If we're mid-way through an identity-disambiguation dialog (e.g. the
+        # customer answered "which product?" with a name that classified as a
+        # product query), continue that dialog so it doesn't stall.
+        if session.get("resolution_stage"):
+            status, result = await resolve_identity(entities, session)
+            if status == "ask":
+                return result
+            order = result
+        else:
+            # Normal product query: order lookup is best-effort enrichment only,
+            # so a miss must NOT count toward escalation.
+            order, _ = await resolve_order(entities, session, record_miss=False)
     except Exception as e:
         logger.error(f"Product DB check failed: {e}")
         return base_context

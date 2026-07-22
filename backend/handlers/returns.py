@@ -1,4 +1,4 @@
-from backend.handlers.resolve import resolve_order
+from backend.handlers.resolve import resolve_identity
 from loguru import logger
 
 
@@ -6,15 +6,15 @@ async def handle_return_refund(entities: dict, session: dict) -> str:
     reason = entities.get("reason", "not specified")
 
     try:
-        order, order_id = await resolve_order(entities, session)
+        status, result = await resolve_identity(entities, session)
     except Exception as e:
         logger.error(f"Return handler failed: {e}")
         return "I am having trouble checking return eligibility. Please try again."
 
-    if not order:
-        if order_id:
-            return f"I could not find order {order_id}. Please verify your order ID."
-        return "Could you please share your order ID so I can check return eligibility?"
+    if status == "ask":
+        return result
+
+    order = result
 
     if order.return_eligible == "no":
         return f"""

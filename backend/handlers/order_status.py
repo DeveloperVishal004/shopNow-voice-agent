@@ -1,23 +1,19 @@
-from backend.handlers.resolve import resolve_order
+from backend.handlers.resolve import resolve_identity
 from loguru import logger
 
 
 async def handle_order_status(entities: dict, session: dict) -> str:
-    """
-    Looks up order status from DB via the shared resolver.
-    Returns a natural language string the LLM will use to respond.
-    """
+    """Looks up order status via the shared conversational resolver."""
     try:
-        order, order_id = await resolve_order(entities, session)
+        status, result = await resolve_identity(entities, session)
     except Exception as e:
         logger.error(f"Order status handler failed: {e}")
         return "I am having trouble fetching your order details right now. Please try again."
 
-    if not order:
-        if order_id:
-            return f"I could not find any order with ID {order_id}. Please check and try again."
-        return "I could not find your order. Could you please share your order ID?"
+    if status == "ask":
+        return result   # a question for the LLM to voice (asking for ID / phone / product)
 
+    order = result
     context = f"""
 Order found:
 - Order ID     : {order.id}

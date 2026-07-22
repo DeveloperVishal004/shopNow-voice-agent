@@ -28,6 +28,8 @@ def create_session(customer_phone: str = None) -> dict:
         "order_context":     None,        # DB result stored here after lookup
         "data_not_found_streak": 0,       # consecutive failed backend data lookups
         "unknown_intent_streak": 0,       # consecutive turns the classifier couldn't match
+        "resolution_stage":  None,        # identity-disambiguation dialog state
+        "disambig_phone":    None,        # phone captured while disambiguating by product
     }
 
     sessions[call_id] = session
