@@ -54,6 +54,18 @@ def check_escalation(session: dict) -> dict:
             reason=f"Conversation reached {customer_turn_count} turns without resolution"
         )
 
+    # ── Rule: repeated unclassified queries ──────────────
+    # A customer whose requests keep failing to match any of the 5
+    # known intents gets handed off instead of looping indefinitely
+    # with only generic clarifying replies.
+    unknown_intent_streak = session.get("unknown_intent_streak", 0)
+    if unknown_intent_streak >= settings.escalation_unknown_intent_limit:
+        logger.info(f"Escalation triggered: unclassified intent x{unknown_intent_streak} | call: {session['call_id']}")
+        return build_escalation_response(
+            session,
+            reason=f"Could not understand the customer's request after {unknown_intent_streak} attempts"
+        )
+
     if len(sentiment_history) < settings.escalation_min_turns:
         return {
             "should_escalate": False,

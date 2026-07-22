@@ -10,7 +10,8 @@ from openai import AsyncOpenAI
 
 from backend.config import settings
 from backend.memory.session import (
-    create_session, get_session, add_turn, update_session, end_session, get_conversation_history
+    create_session, get_session, add_turn, update_session, end_session,
+    get_conversation_history, record_intent_classification
 )
 from backend.services.sentiment import score_sentiment
 from backend.services.escalation import check_escalation
@@ -169,6 +170,7 @@ async def process_turn(websocket: WebSocket, call_id: str, pcm_bytes: bytes):
         intent_result = await loop.run_in_executor(None, classify_intent, transcript, history)
         intent = intent_result["intent"]
         entities = intent_result["entities"]
+        record_intent_classification(session, intent)
 
         add_turn(
             call_id=call_id,

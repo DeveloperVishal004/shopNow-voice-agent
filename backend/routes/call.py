@@ -9,7 +9,8 @@ from backend.memory.session import (
     add_turn,
     update_session,
     end_session,
-    delete_session
+    delete_session,
+    record_intent_classification
 )
 from backend.services.intent import classify_intent
 from backend.services.llm import generate_response
@@ -70,6 +71,7 @@ async def handle_turn(request: TurnRequest):
     intent_result = classify_intent(request.text, history)
     intent   = intent_result["intent"]
     entities = intent_result["entities"]
+    record_intent_classification(session, intent)
 
     # 4 — add customer turn to session
     add_turn(

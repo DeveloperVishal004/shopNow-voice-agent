@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     escalation_min_turns: int = 3
     escalation_max_turns: int = 8               # escalate if a call runs this many customer turns unresolved
     escalation_data_not_found_limit: int = 2    # escalate after this many failed backend data lookups
+    escalation_unknown_intent_limit: int = 3    # escalate after this many consecutive unclassified queries
 
 
     class Config:
