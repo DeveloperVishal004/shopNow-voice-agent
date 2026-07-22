@@ -28,7 +28,8 @@ class CallLog(Base):
     id            = Column(String, primary_key=True)
     customer_id   = Column(String)
     language      = Column(String)        # en, hi, hinglish
-    intent        = Column(String)        # order_status, return_refund etc
+    intent        = Column(String)        # last live turn intent (during the call)
+    call_category = Column(String)        # whole-call purpose, classified post-call
     outcome       = Column(String)        # resolved / escalated
     duration_secs = Column(Integer)
     sentiment_avg = Column(Float)
