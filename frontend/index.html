@@ -858,6 +858,12 @@ body {
         <div id="intentBars"></div>
       </div>
 
+      <!-- purpose / category bars (whole-call, classified after each call) -->
+      <div style="padding:16px;border-radius:16px;border:1px solid var(--glass-border);background:var(--glass);margin-bottom:12px;">
+        <div class="panel-title" style="margin-bottom:14px;">Calls by Purpose</div>
+        <div id="categoryBars"></div>
+      </div>
+
       <!-- language breakdown -->
       <div style="padding:16px;border-radius:16px;border:1px solid var(--glass-border);background:var(--glass);">
         <div class="panel-title" style="margin-bottom:14px;">Calls by Language</div>
@@ -1453,8 +1459,9 @@ async function fetchDailyReport() {
     }
 
     // intent bars
-    renderBars('intentBars', d.calls_by_intent || {}, 'var(--blue)');
-    renderBars('langBars',   d.calls_by_language || {}, 'var(--purple)');
+    renderBars('intentBars',   d.calls_by_intent || {}, 'var(--blue)');
+    renderBars('categoryBars', d.calls_by_category || {}, 'var(--green)');
+    renderBars('langBars',     d.calls_by_language || {}, 'var(--purple)');
 
   } catch(e) { /* backend offline */ }
 }

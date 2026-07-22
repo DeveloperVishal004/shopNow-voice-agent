@@ -145,6 +145,17 @@ async def get_daily_report():
                 row[0]: row[1] for row in lang_rows.fetchall()
             }
 
+            # calls by whole-call purpose (post-call category — includes
+            # positive_feedback, which the live intent breakdown can't show)
+            category_rows = await db.execute(
+                select(CallLog.call_category, func.count(CallLog.id))
+                .group_by(CallLog.call_category)
+            )
+            calls_by_category = {
+                (row[0] or "uncategorized"): row[1]
+                for row in category_rows.fetchall()
+            }
+
             # fcr rate
             fcr = round(
                 (resolved_calls / total_calls * 100) if total_calls > 0 else 0, 1
@@ -174,6 +185,7 @@ async def get_daily_report():
                 "fcr_percent":      fcr,
                 "avg_sentiment":    avg_sentiment,
                 "calls_by_intent":  calls_by_intent,
+                "calls_by_category": calls_by_category,
                 "calls_by_language": calls_by_language,
                 "recent_calls":     recent_calls,
             }

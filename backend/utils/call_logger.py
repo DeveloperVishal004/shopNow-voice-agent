@@ -16,31 +16,67 @@ from backend.services.sentiment import get_average_sentiment
 CALL_LOGS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "call_logs"))
 os.makedirs(CALL_LOGS_DIR, exist_ok=True)
 
-async def summarize_call(transcript_text: str) -> str:
-    """Uses LLM to summarize the given transcript."""
+# Whole-call purpose categories the post-call classifier may choose from.
+# The 6 live intents + positive_feedback (praise/thanks, no request) + other.
+CALL_CATEGORIES = [
+    "order_status", "return_refund", "payment_issue", "delivery_complaint",
+    "product_query", "positive_feedback", "general_or_unrelated", "other",
+]
+
+
+async def summarize_and_categorize_call(transcript_text: str, fallback_category: str = "other"):
+    """
+    Single LLM call that both summarizes the transcript AND classifies the
+    call's *overall purpose* from the full conversation (not one utterance).
+
+    Whole-call context is what makes this reliable for reporting — e.g. a
+    call whose only purpose is to thank the company is classified
+    'positive_feedback', which a per-utterance intent classifier (focused on
+    routing to a handler) has no dedicated category for.
+
+    Returns (summary, category). Falls back gracefully on any failure so the
+    call still logs.
+    """
     if not transcript_text.strip():
-        return "No conversation occurred."
-        
+        return "No conversation occurred.", fallback_category
+
     try:
         response = client.chat.completions.create(
             model=settings.llm_model,
             messages=[
                 {
                     "role": "system",
-                    "content": "You are an assistant that summarizes customer support calls. Provide a brief 1-3 sentence summary of the customer's issue and how the agent resolved it. Do not include extra commentary, just the summary."
+                    "content": (
+                        "You summarize and categorize a completed customer support call. "
+                        "Return ONLY a JSON object with two keys:\n"
+                        '  "summary": a brief 1-3 sentence summary of the customer\'s issue and how it was handled.\n'
+                        '  "category": the call\'s PRIMARY purpose, exactly one of: '
+                        + ", ".join(CALL_CATEGORIES) + ".\n"
+                        "Use 'positive_feedback' when the customer's main purpose was to "
+                        "thank, praise, or express satisfaction with no other request. "
+                        "Use 'other' only if nothing else fits. "
+                        "Judge the call as a whole, not just the first message."
+                    ),
                 },
                 {
                     "role": "user",
-                    "content": f"Here is the call transcript:\n\n{transcript_text}"
-                }
+                    "content": f"Here is the call transcript:\n\n{transcript_text}",
+                },
             ],
-            max_tokens=150,
-            temperature=0.3
+            max_tokens=200,
+            temperature=0.3,
+            response_format={"type": "json_object"},
         )
-        return response.choices[0].message.content.strip()
+        raw = response.choices[0].message.content.strip()
+        data = json.loads(raw)
+        summary = (data.get("summary") or "Summary could not be generated.").strip()
+        category = (data.get("category") or fallback_category).strip()
+        if category not in CALL_CATEGORIES:
+            category = fallback_category
+        return summary, category
     except Exception as e:
-        logger.error(f"Failed to generate summary: {e}")
-        return "Summary could not be generated."
+        logger.error(f"Failed to summarize/categorize call: {e}")
+        return "Summary could not be generated.", fallback_category
 
 async def save_call_to_folder(call_id: str, session: dict):
     """Saves the call details, transcript, and a generated summary to a JSON file."""
@@ -51,14 +87,20 @@ async def save_call_to_folder(call_id: str, session: dict):
             role = "Customer" if t.get("role") == "customer" else "Agent Priya"
             transcript_text += f"{role}: {t.get('text', '')}\n"
         
-        summary = await summarize_call(transcript_text)
-        
+        # Whole-call summary + purpose category, in one LLM call.
+        # Fall back to the last live intent if categorization can't decide.
+        fallback_category = session.get("current_intent") or "other"
+        summary, call_category = await summarize_and_categorize_call(
+            transcript_text, fallback_category=fallback_category
+        )
+
         data = {
             "call_id": call_id,
             "started_at": session.get("started_at"),
             "ended_at": session.get("ended_at") or datetime.now().isoformat(),
             "customer_phone": session.get("customer_id"),
             "summary": summary,
+            "call_category": call_category,
             "transcript": turns,
             "raw_transcript_text": transcript_text
         }
@@ -72,6 +114,7 @@ async def save_call_to_folder(call_id: str, session: dict):
             f.write(f"Started At: {data['started_at']}\n")
             f.write(f"Ended At: {data['ended_at']}\n")
             f.write(f"Customer Phone: {data['customer_phone']}\n")
+            f.write(f"Category: {call_category}\n")
             f.write("-" * 40 + "\n")
             f.write("SUMMARY:\n")
             f.write(summary + "\n")
@@ -101,6 +144,7 @@ async def save_call_to_folder(call_id: str, session: dict):
                     customer_id   = session.get("customer_id") or "Unknown",
                     language      = session.get("language", "en"),
                     intent        = session.get("current_intent", "unknown"),
+                    call_category = call_category,
                     outcome       = outcome,
                     duration_secs = 0, # we don't have accurate duration here unless we compute it
                     sentiment_avg = avg_sent,
