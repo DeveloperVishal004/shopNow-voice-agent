@@ -2,7 +2,7 @@ import json
 from sqlalchemy import select, text
 from backend.db.database import AsyncSessionLocal
 from backend.db.models import Order
-from backend.memory.session import record_data_lookup
+from backend.memory.session import record_data_lookup, cache_order_context
 from loguru import logger
 
 
@@ -46,17 +46,9 @@ async def handle_order_status(entities: dict, session: dict) -> str:
                 record_data_lookup(session, found=False)
                 return f"I could not find any order with ID {order_id}. Please check and try again."
 
-            # store in session for later turns
+            # store in session for later turns (reusable by other handlers too)
             record_data_lookup(session, found=True)
-            session["order_context"] = {
-                "id":             order.id,
-                "status":         order.status,
-                "item_name":      order.item_name,
-                "order_date":     order.order_date,
-                "delivery_date":  order.delivery_date,
-                "return_eligible": order.return_eligible
-            }
-            session["customer_name"] = order.customer_name
+            cache_order_context(session, order)
 
             # build context string for LLM
             context = f"""
