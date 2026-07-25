@@ -10,7 +10,7 @@ from backend.config import settings
 
 # For DB logging
 from backend.db.database import AsyncSessionLocal
-from backend.db.models import CallLog
+from backend.db.models import CallLog, EscalationLog
 from backend.services.sentiment import get_average_sentiment
 
 CALL_LOGS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "call_logs"))
@@ -77,6 +77,54 @@ async def summarize_and_categorize_call(transcript_text: str, fallback_category:
     except Exception as e:
         logger.error(f"Failed to summarize/categorize call: {e}")
         return "Summary could not be generated.", fallback_category
+
+async def save_escalation_log(brief: dict):
+    """
+    Persist an escalation hand-off brief to the escalation_logs table.
+
+    Without this, the EscalationLog table was defined and read by
+    /report/escalation/{call_id} (as the fallback for a call that already
+    ended) but never written — so that fallback always 404'd and there was
+    no durable audit trail of why calls escalated. We key the row on call_id
+    (one escalation per call, since the call ends on hand-off) so a repeated
+    trigger can't create duplicate rows.
+    """
+    if not brief:
+        return
+    try:
+        call_id = brief.get("call_id")
+        if not call_id:
+            return
+
+        reason  = brief.get("escalation_reason", "")
+        snippet = brief.get("conversation_snippet", "")
+        issue_summary = (
+            f"{reason}\n\nRecent conversation:\n{snippet}" if snippet else reason
+        )
+
+        async with AsyncSessionLocal() as db:
+            from sqlalchemy import select
+            existing = await db.execute(
+                select(EscalationLog).where(EscalationLog.id == call_id)
+            )
+            if existing.scalar_one_or_none():
+                return  # already persisted for this call
+
+            row = EscalationLog(
+                id                = call_id,
+                call_id           = call_id,
+                customer_name     = brief.get("customer_name", "Unknown"),
+                issue_summary     = issue_summary,
+                sentiment_history = json.dumps(brief.get("sentiment_history", [])),
+                recommended_tone  = brief.get("recommended_tone", ""),
+                resolved          = "no",  # just handed off; human hasn't resolved yet
+            )
+            db.add(row)
+            await db.commit()
+            logger.info(f"Escalation persisted to DB | call: {call_id}")
+    except Exception as e:
+        logger.error(f"Failed to persist escalation log for brief: {e}")
+
 
 async def save_call_to_folder(call_id: str, session: dict):
     """Saves the call details, transcript, and a generated summary to a JSON file."""

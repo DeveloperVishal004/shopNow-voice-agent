@@ -25,7 +25,12 @@ class Settings(BaseSettings):
 
     # Escalation thresholds
     escalation_negative_turns: int = 4
-    escalation_sentiment_threshold: float = -0.2
+    # Whole-call average sentiment at/below which we escalate. On the score
+    # scale (angry -1.0, negative -0.5, neutral 0.0, positive +1.0), -0.4 means
+    # the call has been predominantly negative overall — a deliberate midpoint
+    # between hair-trigger (-0.2 fires on mostly-neutral calls) and near-dead
+    # (-0.7, which a fully-"negative" call averaging -0.5 would never reach).
+    escalation_sentiment_threshold: float = -0.4
     escalation_min_turns: int = 3
     escalation_max_turns: int = 8               # escalate if a call runs this many customer turns unresolved
     escalation_data_not_found_limit: int = 2    # escalate after this many failed backend data lookups

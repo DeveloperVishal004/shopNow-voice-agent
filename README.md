@@ -50,7 +50,7 @@ A real-time voice system that listens, understands context across multiple turns
 | ✅ FCR (Tier-1) | 75%+ projected |
 | ⭐ CSAT | 4.0+ projected |
 | 🕐 Availability | 24/7 |
-| 🌐 Languages | English, Hindi, Hinglish, Urdu, Urdilish |
+| 🌐 Languages | 11 Indian languages — replies in the caller's own language |
 | 💰 Cost reduction | 60–70% projected |
 
 ---
@@ -60,7 +60,7 @@ A real-time voice system that listens, understands context across multiple turns
 | Feature | Description |
 |---------|-------------|
 | 🎙️ **Real-Time Voice** | Bidirectional audio over WebSocket — customer speaks, Priya responds in < 2 seconds |
-| 🌐 **Multilingual** | Auto-detects language — no "press 1 for Hindi" |
+| 🌐 **Multilingual** | Auto-detects language and replies in the caller's own — understands in English, responds in their language (direct generation, or Sarvam Mayura translation for low-resource languages) |
 | 🧠 **5-Intent NLU** | OpenAI function calling classifies intent + extracts entities in one API call |
 | 💾 **Multi-Turn Memory** | In-memory session tracks full conversation, intent, sentiment, order context |
 | 📚 **RAG Knowledge Base** | LangChain + FAISS over 5 policy documents — grounded, not hallucinated |
@@ -129,8 +129,9 @@ Customer hears Priya
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | **Backend** | FastAPI + Uvicorn | REST API + WebSocket server |
-| **STT** | Sarvam AI Bulbul | Indian language speech-to-text |
-| **TTS** | Sarvam AI Bulbul v2 | Natural Indian voice synthesis |
+| **STT** | Sarvam AI Saaras v3 | Indian language speech-to-text (transcribes + translates to English) |
+| **TTS** | Sarvam AI Bulbul v2 | Natural Indian voice synthesis (streaming) |
+| **Translation** | Sarvam AI Mayura | Reply translation for low-resource languages |
 | **LLM** | OpenAI GPT-4o-mini | Intent classification + response generation |
 | **Embeddings** | OpenAI text-embedding-3-small | Document vectorization for RAG |
 | **Sentiment** | GPT-4o-mini | Utterance-level sentiment scoring — tone adaptation + escalation |
@@ -250,10 +251,11 @@ MAX_TOKENS=200
 TTS_MODEL=tts-1
 TTS_VOICE=nova
 ESCALATION_NEGATIVE_TURNS=4
-ESCALATION_SENTIMENT_THRESHOLD=-0.7
+ESCALATION_SENTIMENT_THRESHOLD=-0.4
 ESCALATION_MIN_TURNS=3
 ESCALATION_MAX_TURNS=8
 ESCALATION_DATA_NOT_FOUND_LIMIT=2
+ESCALATION_UNKNOWN_INTENT_LIMIT=3
 ```
 
 ### Step 5 — Seed the database
@@ -372,6 +374,7 @@ The escalation engine evaluates multiple signals every turn:
 ```
 Rule 1: Explicit human request    → immediate escalation
         "manager", "agent", "human", "manav bulao"
+        (whole-word match, last 3 turns)
 
 Rule 2: Data not found            → order lookup fails
         (repeated)                  ESCALATION_DATA_NOT_FOUND_LIMIT times (default 2)
@@ -380,12 +383,22 @@ Rule 2: Data not found            → order lookup fails
 Rule 3: Long conversation         → ESCALATION_MAX_TURNS customer turns
                                     without resolution (default 8)
 
-Rule 4: Consecutive negative      → ≥ 70% of the last ESCALATION_NEGATIVE_TURNS
+Rule 4: Repeated unclassified     → ESCALATION_UNKNOWN_INTENT_LIMIT unmatched
+        intent + frustration        turns (default 3) AND recent negative/angry
+                                    sentiment — calm gibberish is held off
+                                    (prank-safe)
+
+Rule 5: Consecutive negative      → ≥ 70% of the last ESCALATION_NEGATIVE_TURNS
         sentiment                   turns are negative/angry (default 4)
 
-Rule 5: Sentiment threshold       → avg score ≤ ESCALATION_SENTIMENT_THRESHOLD
-                                    evaluated after ESCALATION_MIN_TURNS
+Rule 6: Sentiment threshold       → avg score ≤ ESCALATION_SENTIMENT_THRESHOLD
+                                    (default -0.4), after ESCALATION_MIN_TURNS
 ```
+
+Capability rules (1–4) fire regardless of mood; emotional rules (5–6) only
+after a short warm-up. Every escalation is **persisted to the
+`escalation_logs` table** for audit and is retrievable via
+`/report/escalation/{call_id}` after the call ends.
 
 **Handoff brief includes:**
 ```
@@ -423,13 +436,25 @@ The sentiment label is injected into the response prompt as a tone directive, so
 
 ## 🌐 Language Support
 
-| Code | Language | Script |
-|------|----------|--------|
-| `en` | English | Latin |
-| `hi` | Hindi | Devanagari (U+0900–U+097F) |
-| `hinglish` | Hinglish | Roman (Hindi words) |
-| `ur` | Urdu | Perso-Arabic (U+0600–U+06FF) |
-| `urdilish` | Urdilish | Roman (Urdu words) |
+The agent **understands in one language and replies in the caller's**. Sarvam
+STT (`saaras`) transcribes *and translates* the customer's speech to English,
+so intent classification, RAG, and sentiment all reason in English. The reply
+is then delivered in the caller's own language:
+
+- **Direct generation** for languages the LLM handles fluently — English,
+  Hindi, Tamil, Telugu, Bengali, Marathi, Gujarati.
+- **Translate-then-speak** for lower-resource languages — the reply is
+  generated in English and translated with **Sarvam Mayura** before TTS
+  (Odia, Kannada, Malayalam, Punjabi).
+- **Graceful fallback** to English if a detected language isn't supported by
+  the voice model.
+
+The detected language is captured once and used consistently for the LLM
+reply, the TTS voice, and the call log — so spoken audio and generated text
+never disagree.
+
+**Supported voice languages:** English, Hindi, Bengali, Gujarati, Kannada,
+Malayalam, Marathi, Odia, Punjabi, Tamil, Telugu.
 
 ---
 
@@ -457,7 +482,8 @@ The sentiment label is injected into the response prompt as a tone directive, so
 
 ## 🔮 What's Next
 
-- [ ] Tamil, Telugu, Kannada, Bengali full support
+- [x] Tamil, Telugu, Bengali, Kannada, Odia, Malayalam, Punjabi, Marathi, Gujarati support
+- [ ] Native-speaker review of low-resource language translations
 - [ ] Redis-based durable session storage
 - [ ] Twilio / Exotel integration for real phone numbers
 - [ ] CRM and ticketing platform integrations

@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select, func
@@ -101,35 +102,49 @@ async def log_call(request: LogCallRequest):
 async def get_daily_report():
     """
     Returns aggregated stats for today's calls.
-    Streamlit dashboard reads from this endpoint.
+    The HTML dashboard reads from this endpoint.
     """
     try:
+        # Scope every aggregate to calls created today. created_at is written
+        # by func.now() (UTC in SQLite), so compare against today's UTC midnight.
+        today_start = datetime.now(timezone.utc).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+
         async with AsyncSessionLocal() as db:
 
             # total calls
-            total = await db.execute(func.count(CallLog.id))
+            total = await db.execute(
+                select(func.count(CallLog.id)).where(CallLog.created_at >= today_start)
+            )
             total_calls = total.scalar() or 0
 
             # resolved vs escalated
             resolved = await db.execute(
-                select(func.count(CallLog.id)).where(CallLog.outcome == "resolved")
+                select(func.count(CallLog.id))
+                .where(CallLog.created_at >= today_start)
+                .where(CallLog.outcome == "resolved")
             )
             resolved_calls = resolved.scalar() or 0
 
             escalated = await db.execute(
-                select(func.count(CallLog.id)).where(CallLog.outcome == "escalated")
+                select(func.count(CallLog.id))
+                .where(CallLog.created_at >= today_start)
+                .where(CallLog.outcome == "escalated")
             )
             escalated_calls = escalated.scalar() or 0
 
             # average sentiment
             avg_sent = await db.execute(
                 select(func.avg(CallLog.sentiment_avg))
+                .where(CallLog.created_at >= today_start)
             )
             avg_sentiment = round(avg_sent.scalar() or 0.0, 2)
 
             # calls by intent
             intent_rows = await db.execute(
                 select(CallLog.intent, func.count(CallLog.id))
+                .where(CallLog.created_at >= today_start)
                 .group_by(CallLog.intent)
             )
             calls_by_intent = {
@@ -139,6 +154,7 @@ async def get_daily_report():
             # calls by language
             lang_rows = await db.execute(
                 select(CallLog.language, func.count(CallLog.id))
+                .where(CallLog.created_at >= today_start)
                 .group_by(CallLog.language)
             )
             calls_by_language = {
@@ -149,6 +165,7 @@ async def get_daily_report():
             # positive_feedback, which the live intent breakdown can't show)
             category_rows = await db.execute(
                 select(CallLog.call_category, func.count(CallLog.id))
+                .where(CallLog.created_at >= today_start)
                 .group_by(CallLog.call_category)
             )
             calls_by_category = {
@@ -164,6 +181,7 @@ async def get_daily_report():
             # recent calls
             recent_rows = await db.execute(
                 select(CallLog.id, CallLog.intent, CallLog.language, CallLog.outcome, CallLog.sentiment_avg, CallLog.created_at)
+                .where(CallLog.created_at >= today_start)
                 .order_by(CallLog.created_at.desc())
                 .limit(15)
             )

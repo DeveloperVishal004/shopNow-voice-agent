@@ -17,10 +17,32 @@ from backend.services.sentiment import score_sentiment
 from backend.services.escalation import check_escalation
 from backend.services.intent import classify_intent
 from backend.services.llm import generate_response
-from backend.utils.call_logger import save_call_to_folder
+from backend.services.translate import needs_translation, translate_text
+from backend.utils.call_logger import save_call_to_folder, save_escalation_log
 
 router = APIRouter()
 aclient = AsyncOpenAI(api_key=settings.openai_api_key)
+
+# Languages the bulbul:v2 TTS voice can actually synthesize. Sarvam STT may
+# detect a language outside this set (or return an unexpected code), so we
+# guard the TTS target: an unsupported language falls back to English rather
+# than failing synthesis and leaving the caller with silence.
+TTS_SUPPORTED_LANGUAGES = {
+    "en-IN", "hi-IN", "bn-IN", "gu-IN", "kn-IN", "ml-IN",
+    "mr-IN", "od-IN", "pa-IN", "ta-IN", "te-IN",
+}
+TTS_FALLBACK_LANGUAGE = "en-IN"
+
+
+def safe_tts_language(lang_code: str) -> str:
+    """Return a TTS-supported language code, falling back if unsupported."""
+    if lang_code and lang_code in TTS_SUPPORTED_LANGUAGES:
+        return lang_code
+    logger.warning(
+        f"TTS language '{lang_code}' not supported — "
+        f"falling back to {TTS_FALLBACK_LANGUAGE}"
+    )
+    return TTS_FALLBACK_LANGUAGE
 
 @router.websocket("/ws/{call_id}")
 async def realtime_call(websocket: WebSocket, call_id: str):
@@ -93,9 +115,10 @@ async def send_agent_response(websocket: WebSocket, call_id: str, text: str, lan
     logger.info(f"Generating TTS (Streaming) for: {text[:40]}...")
     try:
         import httpx
+        tts_lang = safe_tts_language(lang_code)
         payload = {
             "text": text,
-            "target_language_code": lang_code,
+            "target_language_code": tts_lang,
             "speaker": "anushka",
             "model": "bulbul:v2",
             "pace": 1,
@@ -156,6 +179,18 @@ async def process_turn(websocket: WebSocket, call_id: str, pcm_bytes: bytes):
             stt_data = resp.json()
             transcript = stt_data.get("transcript", "").strip()
             detected_lang = stt_data.get("language_code", "hi-IN")
+
+        # Normalize the detected language ONCE, up front, to one the voice model
+        # supports. Using this same value for both the LLM reply and the TTS
+        # keeps the spoken language and the generated text in agreement (avoids
+        # e.g. Assamese text spoken by a Hindi voice).
+        reply_lang = safe_tts_language(detected_lang)
+
+        # Decide HOW to reach the reply language: for languages the LLM writes
+        # fluently, generate directly in reply_lang. For low-resource languages,
+        # generate in English and translate with Mayura afterwards (gen_lang is
+        # what we ask the LLM to write in).
+        gen_lang = "en-IN" if needs_translation(reply_lang) else reply_lang
         if not transcript:
             logger.warning("Empty transcript received. Skipping turn.")
             return
@@ -179,7 +214,7 @@ async def process_turn(websocket: WebSocket, call_id: str, pcm_bytes: bytes):
             intent=intent,
             sentiment=sentiment["label"]
         )
-        update_session(call_id, current_intent=intent)
+        update_session(call_id, current_intent=intent, language=reply_lang)
 
         await websocket.send_text(json.dumps({
             "type": "transcript",
@@ -197,6 +232,7 @@ async def process_turn(websocket: WebSocket, call_id: str, pcm_bytes: bytes):
                 "message": escalation["message"],
                 "escalation_brief": escalation["brief"]
             }))
+            await save_escalation_log(escalation["brief"])
             session_data = end_session(call_id, "escalated")
             if session_data:
                 asyncio.create_task(save_call_to_folder(call_id, session_data))
@@ -208,6 +244,7 @@ async def process_turn(websocket: WebSocket, call_id: str, pcm_bytes: bytes):
             user_text=transcript,
             intent=intent,
             entities=entities,
+            lang_code=gen_lang,
             sentiment=sentiment["label"]
         )
 
@@ -221,12 +258,21 @@ async def process_turn(websocket: WebSocket, call_id: str, pcm_bytes: bytes):
                 "message": escalation["message"],
                 "escalation_brief": escalation["brief"]
             }))
+            await save_escalation_log(escalation["brief"])
             session_data = end_session(call_id, "escalated")
             if session_data:
                 asyncio.create_task(save_call_to_folder(call_id, session_data))
             return
 
-        await send_agent_response(websocket, call_id, response_text)
+        # If we generated in English for a low-resource target, translate the
+        # final reply into the caller's language before speaking it. (No-op /
+        # returns source text unchanged when translation isn't needed or fails.)
+        if gen_lang != reply_lang:
+            response_text = await translate_text(
+                response_text, target_lang_code=reply_lang, source_lang_code="en-IN"
+            )
+
+        await send_agent_response(websocket, call_id, response_text, reply_lang)
 
     except Exception as e:
         logger.error(f"Error processing turn: {e}")
