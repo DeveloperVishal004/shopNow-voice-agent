@@ -94,6 +94,8 @@ async def handle_turn(request: TurnRequest):
             role    = "agent",
             text    = escalation["message"]
         )
+        from backend.utils.call_logger import save_escalation_log
+        await save_escalation_log(escalation["brief"])
         end_session(request.call_id, outcome="escalated")
         return {
             "response":        escalation["message"],
@@ -122,6 +124,8 @@ async def handle_turn(request: TurnRequest):
             role    = "agent",
             text    = escalation["message"]
         )
+        from backend.utils.call_logger import save_escalation_log
+        await save_escalation_log(escalation["brief"])
         end_session(request.call_id, outcome="escalated")
         return {
             "response":        escalation["message"],

@@ -1,6 +1,49 @@
+import re
 from loguru import logger
 from backend.services.sentiment import get_average_sentiment
 from backend.config import settings
+
+# Single-word triggers are matched on whole-word boundaries so "human" does
+# not fire inside "humanitarian"; multi-word phrases are matched as substrings.
+HUMAN_REQUEST_WORDS = {
+    "human", "agent", "manager", "supervisor", "senior",
+    "manav", "insaan", "representative",
+}
+HUMAN_REQUEST_PHRASES = [
+    "real person", "speak to someone", "speak to a human",
+    "talk to a person", "manager bulao", "baat karao", "kisi se baat",
+]
+
+# Fixed "please hold, connecting you to a human" message, pre-translated once
+# per language the bulbul:v2 voice supports and keyed by the 2-letter language
+# prefix. A constant string like this is a template — there is no reason to
+# regenerate it via the LLM on every escalation: look-up is instant,
+# deterministic, and the language is guaranteed TTS-supported. Any language not
+# in the table (or unknown) falls back to English.
+# NOTE: the non-English translations are AI-generated and should be reviewed by
+# a native speaker before production use.
+HOLD_MESSAGES = {
+    "en": "I completely understand, and I'm sorry for the inconvenience. I'm connecting you with a senior specialist who will help you right away. Please hold for just a moment.",
+    "hi": "मैं आपकी परेशानी पूरी तरह समझता हूँ और मुझे खेद है। मैं आपको एक वरिष्ठ विशेषज्ञ से जोड़ रहा हूँ जो आपकी पूरी मदद करेंगे। कृपया एक पल के लिए प्रतीक्षा करें।",
+    "bn": "আমি আপনার সমস্যা সম্পূর্ণ বুঝতে পারছি এবং আমি দুঃখিত। আমি আপনাকে একজন সিনিয়র বিশেষজ্ঞের সঙ্গে সংযুক্ত করছি যিনি আপনাকে সম্পূর্ণ সাহায্য করবেন। অনুগ্রহ করে এক মুহূর্ত অপেক্ষা করুন।",
+    "ta": "உங்கள் சிரமத்தை நான் முழுமையாக புரிந்துகொள்கிறேன், மன்னிக்கவும். உங்களுக்கு முழுமையாக உதவும் ஒரு மூத்த நிபுணருடன் உங்களை இணைக்கிறேன். தயவுசெய்து சிறிது நேரம் காத்திருங்கள்.",
+    "te": "మీ ఇబ్బందిని నేను పూర్తిగా అర్థం చేసుకుంటున్నాను, క్షమించండి. మీకు పూర్తిగా సహాయం చేసే సీనియర్ నిపుణుడితో మిమ్మల్ని కలుపుతున్నాను. దయచేసి ఒక్క క్షణం వేచి ఉండండి.",
+    "mr": "मला तुमची अडचण पूर्णपणे समजते आणि माफ करा. मी तुम्हाला एका वरिष्ठ तज्ञाशी जोडत आहे जे तुम्हाला पूर्ण मदत करतील. कृपया एक क्षण थांबा.",
+    "gu": "હું તમારી મુશ્કેલી સંપૂર્ણ સમજું છું અને માફ કરશો. હું તમને એક વરિષ્ઠ નિષ્ણાત સાથે જોડી રહ્યો છું જે તમને પૂરી મદદ કરશે. કૃપા કરીને એક ક્ષણ રાહ જુઓ.",
+    "pa": "ਮੈਂ ਤੁਹਾਡੀ ਪਰੇਸ਼ਾਨੀ ਪੂਰੀ ਤਰ੍ਹਾਂ ਸਮਝਦਾ ਹਾਂ ਅਤੇ ਮਾਫ਼ ਕਰਨਾ। ਮੈਂ ਤੁਹਾਨੂੰ ਇੱਕ ਸੀਨੀਅਰ ਮਾਹਰ ਨਾਲ ਜੋੜ ਰਿਹਾ ਹਾਂ ਜੋ ਤੁਹਾਡੀ ਪੂਰੀ ਮਦਦ ਕਰੇਗਾ। ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਪਲ ਉਡੀਕ ਕਰੋ।",
+    "kn": "ನಿಮ್ಮ ತೊಂದರೆಯನ್ನು ನಾನು ಸಂಪೂರ್ಣವಾಗಿ ಅರ್ಥಮಾಡಿಕೊಂಡಿದ್ದೇನೆ, ಕ್ಷಮಿಸಿ. ನಿಮಗೆ ಸಂಪೂರ್ಣ ಸಹಾಯ ಮಾಡುವ ಹಿರಿಯ ತಜ್ಞರೊಂದಿಗೆ ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸುತ್ತಿದ್ದೇನೆ. ದಯವಿಟ್ಟು ಒಂದು ಕ್ಷಣ ಕಾಯಿರಿ.",
+    "ml": "നിങ്ങളുടെ ബുദ്ധിമുട്ട് ഞാൻ പൂർണ്ണമായി മനസ്സിലാക്കുന്നു, ക്ഷമിക്കണം. നിങ്ങളെ പൂർണ്ണമായി സഹായിക്കുന്ന ഒരു മുതിർന്ന വിദഗ്ധനുമായി ഞാൻ ബന്ധിപ്പിക്കുന്നു. ദയവായി ഒരു നിമിഷം കാത്തിരിക്കുക.",
+    "od": "ମୁଁ ଆପଣଙ୍କ ଅସୁବିଧା ସମ୍ପୂର୍ଣ୍ଣ ବୁଝୁଛି ଏବଂ କ୍ଷମା ପ୍ରାର୍ଥୀ। ମୁଁ ଆପଣଙ୍କୁ ଜଣେ ବରିଷ୍ଠ ବିଶେଷଜ୍ଞଙ୍କ ସହିତ ଯୋଡୁଛି ଯିଏ ଆପଣଙ୍କୁ ସମ୍ପୂର୍ଣ୍ଣ ସାହାଯ୍ୟ କରିବେ। ଦୟାକରି ଏକ ମୁହୂର୍ତ୍ତ ଅପେକ୍ଷା କରନ୍ତୁ।",
+}
+HOLD_FALLBACK_LANG = "en"
+
+
+def _hold_message(language: str, name: str = "") -> str:
+    """Return the pre-translated hold message for the caller's language,
+    optionally prefixed with their name. Falls back to English."""
+    prefix = (language or "en").lower()[:2]
+    body = HOLD_MESSAGES.get(prefix, HOLD_MESSAGES[HOLD_FALLBACK_LANG])
+    return f"{name}, {body}" if name else body
 
 
 def check_escalation(session: dict) -> dict:
@@ -12,22 +55,17 @@ def check_escalation(session: dict) -> dict:
 
     sentiment_history = session.get("sentiment_history", [])
     turns             = session.get("turns", [])
-    current_intent    = session.get("current_intent", "")
-    customer_name     = session.get("customer_name", "Customer")
 
     # ── Rule 1: explicit human request ──────────────────
     last_customer_turns = [
         t for t in turns[-3:]
         if t["role"] == "customer"
     ]
-    human_keywords = [
-        "human", "agent", "manager", "supervisor",
-        "manav", "insaan", "manager bulao", "senior",
-        "real person", "speak to someone"
-    ]
     for turn in last_customer_turns:
         text_lower = turn["text"].lower()
-        if any(kw in text_lower for kw in human_keywords):
+        # tokenize into words (latin + devanagari) for whole-word matching
+        words = set(re.findall(r"[a-zऀ-ॿ]+", text_lower))
+        if (words & HUMAN_REQUEST_WORDS) or any(p in text_lower for p in HUMAN_REQUEST_PHRASES):
             logger.info(f"Escalation triggered: human requested | call: {session['call_id']}")
             return build_escalation_response(
                 session,
@@ -103,14 +141,12 @@ def check_escalation(session: dict) -> dict:
             reason=f"Average sentiment score {avg_score:.2f} below threshold {settings.escalation_sentiment_threshold}"
         )
 
-    # ── Rule 5: specific intents that require escalation ──
-    escalation_intents = ["complaint", "refund_request", "escalation"]
-    if current_intent and current_intent.lower() in escalation_intents:
-        logger.info(f"Escalation triggered: intent '{current_intent}' requires human | call: {session['call_id']}")
-        return build_escalation_response(
-            session,
-            reason=f"Intent '{current_intent}' flagged for escalation"
-        )
+    # NOTE: there is intentionally no "always escalate on intent X" rule.
+    # All six classified intents (order_status, return_refund, payment_issue,
+    # delivery_complaint, product_query, general_or_unrelated) are ones the
+    # bot is designed to handle, so none warrant an automatic hand-off. A
+    # previous version checked intent names that never matched the real ones
+    # and so never fired — it was removed rather than left as dead code.
 
     # no escalation needed
     return {
@@ -127,24 +163,14 @@ def build_escalation_response(session: dict, reason: str) -> dict:
     """
     brief = generate_handoff_brief(session, reason)
 
-    # empathetic message to customer
+    # empathetic hold message in the caller's language. session["language"] is a
+    # code like "hi-IN" / "od-IN" / "en-IN" (or a bare "hi"/"hinglish" on older
+    # paths); _hold_message keys off the 2-letter prefix and falls back to
+    # English for anything not in the table.
     language = session.get("language", "en")
     customer_name = session.get("customer_name", "")
     name = customer_name if customer_name and customer_name != "Customer" else ""
-    greeting = f"Hello {name}, " if name else ""
-    if language == "hi" or language == "hinglish":
-        message = (
-            f"{greeting}Main samajh sakta hoon aap pareshan hain. "
-            "Main aapko apne senior agent se connect kar raha hoon "
-            "jo aapki poori madad karenge. Kripya ek moment hold karein."
-        )
-    else:
-        message = (
-            f"{greeting}I completely understand your frustration and I sincerely apologize. "
-            "Let me connect you with a senior support specialist right away "
-            "who will be able to fully resolve this for you. "
-            "Please hold for just a moment."
-        )
+    message = _hold_message(language, name)
 
     return {
         "should_escalate": True,
