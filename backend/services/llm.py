@@ -45,6 +45,14 @@ Context provided to you:
 {rag_context}
 """
 
+# Intents whose answers can draw on the policy knowledge base (return windows,
+# refund/shipping/cancellation rules, product info). RAG retrieval is skipped
+# for the rest — order_status just needs the order row and general_or_unrelated
+# needs no policy — so we don't pay for a vector search or bloat the prompt on
+# turns that can't use it. Note: 4 of the 5 KB docs are policy (returns,
+# payments, shipping, cancellation), so RAG is NOT product-only.
+RAG_INTENTS = {"product_query", "return_refund", "payment_issue", "delivery_complaint"}
+
 # tone instructions injected based on the sentiment of the current utterance
 TONE_DIRECTIVES = {
     "angry":    "The customer is ANGRY. Before anything else, sincerely apologise and acknowledge their frustration. Stay calm, extra warm, and lead with a concrete reassurance that you will fix this.",
@@ -78,9 +86,14 @@ async def generate_response(
             db_context = await handler(entities, session)
             logger.info(f"Handler executed: {intent}")
 
-        # fetch RAG context based on user query
-        rag_context = retrieve_context(user_text)
-        logger.info(f"RAG context retrieved for: {user_text[:60]}")
+        # fetch RAG context — only for intents that can actually use policy
+        # knowledge, so order_status / general don't pay for an unused lookup.
+        if intent in RAG_INTENTS:
+            rag_context = retrieve_context(user_text)
+            logger.info(f"RAG context retrieved for: {user_text[:60]}")
+        else:
+            rag_context = ""
+            logger.info(f"RAG skipped for intent '{intent}' (no policy needed)")
         # get full conversation history for multi-turn context
         history = get_conversation_history(call_id)
 
